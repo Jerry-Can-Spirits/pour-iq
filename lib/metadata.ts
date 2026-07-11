@@ -16,6 +16,12 @@ interface PageMetadataInput {
   /** Page title. Templated to "%s | Pour IQ" unless `absoluteTitle` is set. */
   title: string
   description: string
+  /**
+   * Social-preview override for openGraph.description and twitter.description
+   * only (previews truncate near 125 characters; search snippets allow ~160).
+   * When absent, `description` populates all three.
+   */
+  ogDescription?: string
   /** Route path with a leading slash and no trailing slash, e.g. '/pricing'. */
   path: string
   /** Home only: bypass the layout title template. */
@@ -30,6 +36,7 @@ interface PageMetadataInput {
 export function buildMetadata({
   title,
   description,
+  ogDescription,
   path,
   absoluteTitle = false,
 }: PageMetadataInput): Metadata {
@@ -45,10 +52,12 @@ export function buildMetadata({
       locale: 'en_GB',
       url: path,
       images: [ogImage],
+      ...(ogDescription && { description: ogDescription }),
     },
     twitter: {
       card: 'summary_large_image',
       images: [ogImage.url],
+      ...(ogDescription && { description: ogDescription }),
     },
   }
 }
