@@ -4,8 +4,14 @@ on:
   push:
   pull_request:
 
+# Supersede in-flight runs on the same ref — saves runner minutes on
+# rapid pushes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  checks:
+  CI:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
