@@ -44,6 +44,9 @@ const organizationSchema = {
     name: 'Pour IQ',
     url: siteUrl,
   },
+  // JSON-LD consumers prefer raster; the 512px tile is derived from the
+  // vector source in public/brand (scripts/generate-brand-assets.mjs).
+  logo: `${siteUrl}/icon-512.png`,
 }
 
 export const metadata: Metadata = {
@@ -53,6 +56,18 @@ export const metadata: Metadata = {
     template: '%s | Pour IQ',
   },
   description: 'Menu and cost engineering for independent UK bars. Built by Jerry Can Spirits Ltd.',
+  // Brand icons are generated from the vector sources in public/brand by
+  // scripts/generate-brand-assets.mjs.
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
   // PRE-LAUNCH: keep the site out of search indexes until launch day.
   // Removal steps are documented in the README under "Launch day".
   robots: { index: false, follow: false },
