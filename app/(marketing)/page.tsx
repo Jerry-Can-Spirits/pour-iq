@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CapabilityRow } from '@/components/marketing/capability-row'
 import { CtaLink } from '@/components/marketing/cta-link'
 import { buildMetadata } from '@/lib/metadata'
 
@@ -153,15 +154,11 @@ export default function HomePage() {
           </p>
           <ul className="mt-10 divide-y divide-backbar">
             {capabilities.map((capability) => (
-              <li
+              <CapabilityRow
                 key={capability.keyword}
-                className="flex flex-col gap-2 py-5 lg:flex-row lg:items-baseline lg:gap-8"
-              >
-                <span className="font-mono text-mono-label font-medium text-measure lg:w-40 lg:shrink-0">
-                  {capability.keyword}
-                </span>
-                <p className="max-w-[34rem] text-chalk">{capability.description}</p>
-              </li>
+                keyword={capability.keyword}
+                description={capability.description}
+              />
             ))}
           </ul>
           <p className="mt-10 text-chalk">
