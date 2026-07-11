@@ -5,7 +5,7 @@ import { buildMetadata } from '@/lib/metadata'
 export const metadata = buildMetadata({
   title: 'Pour IQ | Menu and cost engineering for UK bars',
   description:
-    'Pour IQ scans your supplier invoices, costs every serve, and shows what each price rise does to your GP. Built for independent UK bars.',
+    'Pour IQ scans your supplier invoices, costs every serve, and shows what each price rise does to your GP. Built for UK bars.',
   path: '/',
   absoluteTitle: true,
 })
