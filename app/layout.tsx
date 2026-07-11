@@ -1,5 +1,30 @@
 import type { Metadata } from 'next'
+import { Bricolage_Grotesque, IBM_Plex_Mono, Instrument_Sans } from 'next/font/google'
+import { tokenCssVariables } from '@/lib/design-tokens'
 import './globals.css'
+
+// next/font self-hosts every face at build time — no runtime requests to a
+// font CDN, so the CSP's font-src 'self' holds.
+const displayFont = Bricolage_Grotesque({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  variable: '--font-bricolage-grotesque',
+  display: 'swap',
+})
+
+const bodyFont = Instrument_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-instrument-sans',
+  display: 'swap',
+})
+
+const monoFont = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-ibm-plex-mono',
+  display: 'swap',
+})
 
 const siteUrl = process.env.SITE_URL ?? 'http://localhost:3000'
 
@@ -21,16 +46,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en-GB">
-      <body className="antialiased">
-        <header>
-          <nav aria-label="Primary">{/* Site navigation arrives with the design pass. */}</nav>
-        </header>
-        <main id="main-content">{children}</main>
-        <footer>
-          <p>Built by Jerry Can Spirits Ltd.</p>
-        </footer>
-      </body>
+    <html
+      lang="en-GB"
+      className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable}`}
+      style={tokenCssVariables as React.CSSProperties}
+    >
+      <body className="antialiased">{children}</body>
     </html>
   )
 }

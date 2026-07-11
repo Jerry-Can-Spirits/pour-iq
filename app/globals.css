@@ -4,8 +4,116 @@
  * Mobile-first: base styles target the smallest viewport; widen with
  * Tailwind's min-width breakpoints (sm:, md:, lg:) only.
  *
- * Design tokens: Tailwind v4 is configured in CSS. The typed token
- * object in lib/design-tokens.ts will be bridged into CSS custom
- * properties inside an @theme block here in a later task. Do not
- * hand-write colour/spacing values in components.
+ * Token values live in lib/design-tokens.ts — the single source of truth.
+ * app/layout.tsx inlines them on <html> as `--pour-*` custom properties and
+ * this file maps them into Tailwind's theme with `@theme inline`, so no raw
+ * colour/spacing values appear here or in components.
  */
+
+/*
+ * Responsive steps: the type scale and section rhythm grow at `lg` (64rem).
+ * The switch happens on intermediate `--pour-size-*` properties because the
+ * `--pour-*` tokens are inline styles on <html>, which a stylesheet rule
+ * cannot override.
+ */
+:root {
+  --pour-size-display-xl: var(--pour-text-display-xl);
+  --pour-size-display: var(--pour-text-display);
+  --pour-size-heading: var(--pour-text-heading);
+  --pour-size-body: var(--pour-text-body);
+  --pour-size-small: var(--pour-text-small);
+  --pour-size-mono-label: var(--pour-text-mono-label);
+  --pour-section-y: var(--pour-spacing-section-y);
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --pour-size-display-xl: var(--pour-text-display-xl-desktop);
+    --pour-size-display: var(--pour-text-display-desktop);
+    --pour-size-heading: var(--pour-text-heading-desktop);
+    --pour-size-body: var(--pour-text-body-desktop);
+    --pour-size-small: var(--pour-text-small-desktop);
+    --pour-size-mono-label: var(--pour-text-mono-label-desktop);
+    --pour-section-y: var(--pour-spacing-section-y-desktop);
+  }
+}
+
+/* The palette is closed: drop Tailwind's default colours so every colour
+   utility must come from the tokens below. */
+@theme {
+  --color-*: initial;
+}
+
+@theme inline {
+  --color-cellar: var(--pour-colour-cellar);
+  --color-backbar: var(--pour-colour-backbar);
+  --color-chalk: var(--pour-colour-chalk);
+  --color-slate: var(--pour-colour-slate);
+  --color-measure: var(--pour-colour-measure);
+  --color-leak: var(--pour-colour-leak);
+  --color-profit: var(--pour-colour-profit);
+
+  --font-display: var(--font-bricolage-grotesque);
+  --font-body: var(--font-instrument-sans);
+  --font-mono: var(--font-ibm-plex-mono);
+
+  --text-display-xl: var(--pour-size-display-xl);
+  --text-display-xl--line-height: var(--pour-text-display-xl-leading);
+  --text-display: var(--pour-size-display);
+  --text-display--line-height: var(--pour-text-display-leading);
+  --text-heading: var(--pour-size-heading);
+  --text-heading--line-height: var(--pour-text-heading-leading);
+  --text-body: var(--pour-size-body);
+  --text-body--line-height: var(--pour-text-body-leading);
+  --text-small: var(--pour-size-small);
+  --text-small--line-height: var(--pour-text-small-leading);
+  --text-mono-label: var(--pour-size-mono-label);
+  --text-mono-label--line-height: var(--pour-text-mono-label-leading);
+  --text-mono-label--letter-spacing: var(--pour-text-mono-label-tracking);
+
+  --spacing-section-y: var(--pour-section-y);
+
+  --radius-sm: var(--pour-radius-sm);
+  --radius-md: var(--pour-radius-md);
+  --radius-lg: var(--pour-radius-lg);
+
+  --ease-pour: var(--pour-ease-pour);
+}
+
+@layer base {
+  :root {
+    /* Tailwind's default --spacing (0.25rem) is re-pointed at the token so
+       the 4px scale has one owner. */
+    --spacing: var(--pour-spacing-unit);
+  }
+
+  body {
+    @apply bg-cellar font-body text-body text-chalk;
+  }
+
+  /* Figures line up in tables and stat rows wherever the mono face is used. */
+  :where(.font-mono, code, kbd, samp, pre) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--pour-colour-measure);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--pour-colour-measure) 40%, transparent);
+    color: var(--pour-colour-chalk);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
