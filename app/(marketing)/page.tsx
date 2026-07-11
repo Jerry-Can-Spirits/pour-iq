@@ -210,6 +210,37 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Full-bleed backbar band closes the page with a surface shift; slate
+          on backbar is 6.05:1, AA at all sizes (verified 2026-07-11). */}
+      <section
+        id="your-venue"
+        aria-labelledby="venue-heading"
+        className="scroll-mt-16 bg-backbar py-section-y"
+      >
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+          <p className="font-mono text-mono-label font-medium uppercase text-slate">
+            04 / YOUR VENUE
+          </p>
+          <h2 id="venue-heading" className="mt-4 font-display text-display font-bold text-chalk">
+            Now see your own numbers.
+          </h2>
+          <p className="mt-6 max-w-[34rem] text-slate">
+            A demo takes twenty minutes. You will see a working venue inside Pour IQ: a real menu,
+            live costs, and what happens the moment a supplier price moves. Then we set up yours.
+            The first ten venues get the founding rate, locked for as long as they stay.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <CtaLink href="/contact">Book a demo</CtaLink>
+            <Link
+              href="/pricing"
+              className="font-medium text-chalk decoration-measure decoration-2 underline-offset-4 hover:underline"
+            >
+              See pricing
+            </Link>
+          </div>
+        </div>
+      </section>
     </>
   )
 }
