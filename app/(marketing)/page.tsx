@@ -17,9 +17,24 @@ const capabilities = [
       'Every spec on your menu, costed to the penny and kept current. Built on the Jerry Can Spirits Field Manual recipe library.',
   },
   {
-    keyword: 'BENCHMARK',
+    keyword: 'ENGINEER',
     description:
-      'See how your supplier prices sit against venues like yours. Anonymous in both directions, always.',
+      'Till sales set against the margin on every spec. Pour IQ shows which drinks to push, which to re-engineer, and which to drop.',
+  },
+  {
+    keyword: 'COUNT',
+    description:
+      'Stocktakes measured against what the till says should have gone. The gap shows up in millilitres, percent, and pounds, with a reason logged against every loss.',
+  },
+  {
+    keyword: 'CONNECT',
+    description:
+      'Square, Zettle, and SumUp feed sales straight in. Xero and QuickBooks take the bills at the other end. No retyping on either side.',
+  },
+  {
+    keyword: 'VOICE',
+    description:
+      'Drink descriptions drafted in your venue’s own voice, from a profile you set once. Every line can be kept, edited, or binned before it goes near a menu.',
   },
 ]
 
