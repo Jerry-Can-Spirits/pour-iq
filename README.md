@@ -66,6 +66,26 @@ Three layers keep the site out of search results until launch (robots.txt alone 
 4. Set `SITE_URL=https://pour-iq.co.uk` in the production environment.
 5. Deploy, then verify: `curl -sI https://pour-iq.co.uk` shows **no** `X-Robots-Tag`, page source has **no** `noindex` meta, `/robots.txt` allows crawling and references the sitemap, and `/sitemap.xml` serves all eight routes.
 
+## Brand assets
+
+Vector sources are the single source of truth; every raster asset is derived from an SVG, never the reverse. Colours are token values traced to `lib/design-tokens.ts` in each file's comments.
+
+| File                                                                                                                 | Context                                                                                                                                                                                        |
+| -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `public/brand/pour-mark.svg`                                                                                         | The mark: the hero pour formalised. `currentColor` fill with a measure default — restyle by setting `color` on the embedding context.                                                          |
+| `public/brand/pour-mark-mono.svg`                                                                                    | Single-colour mark, pure `currentColor`, for print and embeds.                                                                                                                                 |
+| `public/brand/pour-mark-on-cellar.svg`                                                                               | The mark on a cellar rounded-square tile (radius-md) for contained contexts: favicons, app icons, avatars.                                                                                     |
+| `public/brand/pour-iq-lockup.svg`                                                                                    | Mark plus wordmark, with "Pour IQ" outlined from Bricolage Grotesque 800 — no font dependency, renders identically everywhere. Generated; do not edit by hand.                                 |
+| `public/icon.svg`, `public/favicon.ico`, `public/apple-touch-icon.png`, `public/icon-192.png`, `public/icon-512.png` | Favicon and app-icon derivatives of the tile, wired through the metadata icons API in `app/layout.tsx` and `public/site.webmanifest`. `icon-512.png` doubles as the Organization JSON-LD logo. |
+| `public/og.png`                                                                                                      | The 1200×630 social card.                                                                                                                                                                      |
+
+Regenerate with:
+
+```
+pnpm brand:generate                        # lockup, favicons, app icons (from the SVGs)
+pwsh scripts/generate-og-image.ps1         # og.png (Windows; System.Drawing)
+```
+
 ## Environment
 
 Copy `.env.example` to `.env.local`. `SITE_URL` feeds `metadataBase` (canonical URLs, OG URLs); `KLAVIYO_API_KEY` is reserved for the newsletter/contact integration. No secrets are committed anywhere in this repo.

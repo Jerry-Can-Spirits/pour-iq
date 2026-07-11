@@ -80,12 +80,19 @@ try {
   $left = 100.0
   $wordmark = 'Pour IQ'
   $wordmarkSize = $g.MeasureString($wordmark, $displayFont, [System.Drawing.PointF]::new(0, 0), $format)
-  $g.DrawString($wordmark, $displayFont, $chalkBrush, $left, 200.0, $format)
 
-  # The pour-underline: the site draws a 3px measure rule at -0.12em; scaled
-  # to this canvas that lands at 10px, sitting just under the baseline.
+  # The pour mark: the site draws a 3px measure rule at -0.12em; scaled to
+  # this canvas that lands at 10px, sitting just under the baseline. The
+  # vertical pour stroke (2:3 ratio -> 7px here) descends from the card's
+  # top edge and lands flush with the underline's bottom at its left end,
+  # matching public/brand/pour-mark.svg and the hero pour geometry. Drawn
+  # before the wordmark so the line travels behind the glyphs, as the
+  # hero's z-index -1 does.
   $underlineY = 200.0 + $wordmarkSize.Height + 8
+  $g.FillRectangle($measureBrush, $left, 0.0, 7, $underlineY + 10)
   $g.FillRectangle($measureBrush, $left, $underlineY, $wordmarkSize.Width, 10)
+
+  $g.DrawString($wordmark, $displayFont, $chalkBrush, $left, 200.0, $format)
 
   $tagline = 'Menu and cost engineering for UK bars.'
   $g.DrawString($tagline, $bodyFont, $slateBrush, $left, $underlineY + 56, $format)
