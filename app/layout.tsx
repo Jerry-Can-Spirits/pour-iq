@@ -28,6 +28,24 @@ const monoFont = IBM_Plex_Mono({
 
 const siteUrl = process.env.SITE_URL ?? 'http://localhost:3000'
 
+// Facts only: no ratings, reviews, or aggregate data of any kind. The
+// existing CSP (script-src 'self' 'unsafe-inline') permits inline JSON-LD.
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Jerry Can Spirits Ltd',
+  url: 'https://jerrycanspirits.co.uk',
+  founder: {
+    '@type': 'Person',
+    name: 'Dan Freeman',
+  },
+  brand: {
+    '@type': 'Brand',
+    name: 'Pour IQ',
+    url: siteUrl,
+  },
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
@@ -51,7 +69,13 @@ export default function RootLayout({
       className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable}`}
       style={tokenCssVariables as React.CSSProperties}
     >
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        {children}
+      </body>
     </html>
   )
 }

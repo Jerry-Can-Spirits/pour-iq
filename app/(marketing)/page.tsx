@@ -1,5 +1,24 @@
 import Link from 'next/link'
 import { CtaLink } from '@/components/marketing/cta-link'
+import { buildMetadata } from '@/lib/metadata'
+
+export const metadata = buildMetadata({
+  title: 'Pour IQ | Menu and cost engineering for UK bars',
+  description:
+    'Pour IQ scans your supplier invoices, costs every serve, and shows what each price rise does to your GP. Built for independent UK bars.',
+  path: '/',
+  absoluteTitle: true,
+})
+
+// Facts only — offers omitted until the price is public; no ratings,
+// reviews, or aggregate data of any kind.
+const softwareApplicationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Pour IQ',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+}
 
 // Final approved copy. COST, COUNT, and CONNECT are verified shipped
 // capabilities reserved for the pricing page, per the capability inventory
@@ -37,6 +56,10 @@ const ledgerRows = [
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
+      />
       <section
         aria-labelledby="hero-heading"
         className="flex min-h-[85svh] items-center py-section-y"

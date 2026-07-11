@@ -1,6 +1,11 @@
-import type { Metadata } from 'next'
+import { buildMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = { title: 'Terms of service' }
+// Interim metadata until the legal pages are drafted.
+export const metadata = buildMetadata({
+  title: 'Terms',
+  description: 'Pour IQ terms of service.',
+  path: '/terms',
+})
 
 export default function TermsPage() {
   return <h1>Terms of service</h1>
