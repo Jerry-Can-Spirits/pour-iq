@@ -1,5 +1,32 @@
 import { CtaLink } from '@/components/marketing/cta-link'
 
+// Final approved copy. COST, COUNT, and CONNECT are verified shipped
+// capabilities reserved for the pricing page, per the capability inventory
+// (code-verified 2026-07-11). BENCHMARK and photo capture are roadmap items,
+// not shipped features, and must not appear anywhere on the homepage.
+const capabilities = [
+  {
+    keyword: 'SCAN',
+    description:
+      'Upload a supplier invoice, straight from the email it arrived in. Pour IQ reads every line, logs every price, and flags what moved since last time.',
+  },
+  {
+    keyword: 'RIPPLE',
+    description:
+      'One price rise touches every recipe it appears in. See the hit to each serve, and to the menu as a whole, the moment it lands.',
+  },
+  {
+    keyword: 'ENGINEER',
+    description:
+      'Every item on the menu, plotted by what it sells against what it makes. Know what to push, what to re-price, and what to drop.',
+  },
+  {
+    keyword: 'VOICE',
+    description:
+      "Menu descriptions written in your venue's voice, not a template's. No other platform does this.",
+  },
+]
+
 const ledgerRows = [
   { description: 'House gin and tonic, menu price', figure: '£8.50' },
   { description: 'Pour cost when the menu was priced', figure: '£1.87' },
@@ -84,6 +111,35 @@ export default function HomePage() {
           </div>
           <p className="mt-10 text-chalk">
             Pour IQ was built to make that visible before the month is gone.
+          </p>
+        </div>
+      </section>
+
+      <section id="the-fix" aria-labelledby="fix-heading" className="scroll-mt-16 py-section-y">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+          <p className="font-mono text-mono-label font-medium uppercase text-slate">02 / THE FIX</p>
+          <h2 id="fix-heading" className="mt-4 font-display text-display font-bold text-chalk">
+            Upload the invoice. Pour IQ does the rest.
+          </h2>
+          <p className="mt-6 max-w-[38rem] text-slate">
+            No spreadsheets to keep alive, no data entry at midnight. The work starts from the
+            paperwork you already have.
+          </p>
+          <ul className="mt-10 divide-y divide-backbar">
+            {capabilities.map((capability) => (
+              <li
+                key={capability.keyword}
+                className="flex flex-col gap-2 py-5 lg:flex-row lg:items-baseline lg:gap-8"
+              >
+                <span className="font-mono text-mono-label font-medium text-measure lg:w-40 lg:shrink-0">
+                  {capability.keyword}
+                </span>
+                <p className="max-w-[34rem] text-chalk">{capability.description}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-10 text-chalk">
+            Ten minutes after the delivery lands, you know where you stand.
           </p>
         </div>
       </section>
