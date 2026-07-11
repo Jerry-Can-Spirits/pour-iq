@@ -1,10 +1,14 @@
 import { CtaLink } from '@/components/marketing/cta-link'
 
+// Final approved copy. COST, COUNT, and CONNECT are verified shipped
+// capabilities reserved for the pricing page, per the capability inventory
+// (code-verified 2026-07-11). BENCHMARK and photo capture are roadmap items,
+// not shipped features, and must not appear anywhere on the homepage.
 const capabilities = [
   {
     keyword: 'SCAN',
     description:
-      'Take a photo of a supplier invoice. Pour IQ reads every line, logs every price, and flags what moved since last time.',
+      'Upload a supplier invoice, straight from the email it arrived in. Pour IQ reads every line, logs every price, and flags what moved since last time.',
   },
   {
     keyword: 'RIPPLE',
@@ -12,29 +16,14 @@ const capabilities = [
       'One price rise touches every recipe it appears in. See the hit to each serve, and to the menu as a whole, the moment it lands.',
   },
   {
-    keyword: 'COST',
-    description:
-      'Every spec on your menu, costed to the penny and kept current. Built on the Jerry Can Spirits Field Manual recipe library.',
-  },
-  {
     keyword: 'ENGINEER',
     description:
-      'Till sales set against the margin on every spec. Pour IQ shows which drinks to push, which to re-engineer, and which to drop.',
-  },
-  {
-    keyword: 'COUNT',
-    description:
-      'Stocktakes measured against what the till says should have gone. The gap shows up in millilitres, percent, and pounds, with a reason logged against every loss.',
-  },
-  {
-    keyword: 'CONNECT',
-    description:
-      'Square, Zettle, and SumUp feed sales straight in. Xero and QuickBooks take the bills at the other end. No retyping on either side.',
+      'Every item on the menu, plotted by what it sells against what it makes. Know what to push, what to re-price, and what to drop.',
   },
   {
     keyword: 'VOICE',
     description:
-      'Drink descriptions drafted in your venue’s own voice, from a profile you set once. Every line can be kept, edited, or binned before it goes near a menu.',
+      "Menu descriptions written in your venue's voice, not a template's. No other platform does this.",
   },
 ]
 
@@ -130,11 +119,11 @@ export default function HomePage() {
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
           <p className="font-mono text-mono-label font-medium uppercase text-slate">02 / THE FIX</p>
           <h2 id="fix-heading" className="mt-4 font-display text-display font-bold text-chalk">
-            Photograph the invoice. Pour IQ does the rest.
+            Upload the invoice. Pour IQ does the rest.
           </h2>
           <p className="mt-6 max-w-[38rem] text-slate">
             No spreadsheets to keep alive, no data entry at midnight. The work starts from the
-            paperwork you already have in your hand.
+            paperwork you already have.
           </p>
           <ul className="mt-10 divide-y divide-backbar">
             {capabilities.map((capability) => (
