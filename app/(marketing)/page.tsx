@@ -1,5 +1,28 @@
 import { CtaLink } from '@/components/marketing/cta-link'
 
+const capabilities = [
+  {
+    keyword: 'SCAN',
+    description:
+      'Take a photo of a supplier invoice. Pour IQ reads every line, logs every price, and flags what moved since last time.',
+  },
+  {
+    keyword: 'RIPPLE',
+    description:
+      'One price rise touches every recipe it appears in. See the hit to each serve, and to the menu as a whole, the moment it lands.',
+  },
+  {
+    keyword: 'COST',
+    description:
+      'Every spec on your menu, costed to the penny and kept current. Built on the Jerry Can Spirits Field Manual recipe library.',
+  },
+  {
+    keyword: 'BENCHMARK',
+    description:
+      'See how your supplier prices sit against venues like yours. Anonymous in both directions, always.',
+  },
+]
+
 const ledgerRows = [
   { description: 'House gin and tonic, menu price', figure: '£8.50' },
   { description: 'Pour cost when the menu was priced', figure: '£1.87' },
@@ -84,6 +107,35 @@ export default function HomePage() {
           </div>
           <p className="mt-10 text-chalk">
             Pour IQ was built to make that visible before the month is gone.
+          </p>
+        </div>
+      </section>
+
+      <section id="the-fix" aria-labelledby="fix-heading" className="scroll-mt-16 py-section-y">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+          <p className="font-mono text-mono-label font-medium uppercase text-slate">02 / THE FIX</p>
+          <h2 id="fix-heading" className="mt-4 font-display text-display font-bold text-chalk">
+            Photograph the invoice. Pour IQ does the rest.
+          </h2>
+          <p className="mt-6 max-w-[38rem] text-slate">
+            No spreadsheets to keep alive, no data entry at midnight. The work starts from the
+            paperwork you already have in your hand.
+          </p>
+          <ul className="mt-10 divide-y divide-backbar">
+            {capabilities.map((capability) => (
+              <li
+                key={capability.keyword}
+                className="flex flex-col gap-2 py-5 lg:flex-row lg:items-baseline lg:gap-8"
+              >
+                <span className="font-mono text-mono-label font-medium text-measure lg:w-40 lg:shrink-0">
+                  {capability.keyword}
+                </span>
+                <p className="max-w-[34rem] text-chalk">{capability.description}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-10 text-chalk">
+            Ten minutes after the delivery lands, you know where you stand.
           </p>
         </div>
       </section>
