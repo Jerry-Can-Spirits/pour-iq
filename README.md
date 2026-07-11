@@ -62,9 +62,9 @@ Three layers keep the site out of search results until launch (robots.txt alone 
 
 1. `app/layout.tsx`: delete the `robots: { index: false, follow: false }` line (and its PRE-LAUNCH comment).
 2. `next.config.ts`: delete the `X-Robots-Tag` header entry (and its PRE-LAUNCH comment).
-3. `app/robots.ts`: replace the disallow-all rule with `allow: '/'` and add the `sitemap` property once `app/sitemap.ts` exists.
+3. `app/robots.ts`: switch the rule from `disallow: '/'` to `allow: '/'`. The `sitemap` reference is already in place (`app/sitemap.ts` lists all eight routes), so no other change is needed.
 4. Set `SITE_URL=https://pour-iq.co.uk` in the production environment.
-5. Deploy, then verify: `curl -sI https://pour-iq.co.uk` shows **no** `X-Robots-Tag`, page source has **no** `noindex` meta, and `/robots.txt` allows crawling.
+5. Deploy, then verify: `curl -sI https://pour-iq.co.uk` shows **no** `X-Robots-Tag`, page source has **no** `noindex` meta, `/robots.txt` allows crawling and references the sitemap, and `/sitemap.xml` serves all eight routes.
 
 ## Environment
 
