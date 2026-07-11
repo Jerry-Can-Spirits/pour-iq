@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { CtaLink } from '@/components/marketing/cta-link'
 
 // Final approved copy. COST, COUNT, and CONNECT are verified shipped
@@ -42,7 +43,7 @@ export default function HomePage() {
       >
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
           <p className="font-mono text-mono-label font-medium uppercase text-slate">
-            NOW IN PILOT AT THE BANK BAR AND GRILL
+            FIRST PILOT VENUE / THE BANK BAR AND GRILL
           </p>
           <h1
             id="hero-heading"
@@ -141,6 +142,49 @@ export default function HomePage() {
           <p className="mt-10 text-chalk">
             Ten minutes after the delivery lands, you know where you stand.
           </p>
+        </div>
+      </section>
+
+      <section id="the-proof" aria-labelledby="proof-heading" className="scroll-mt-16 py-section-y">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <p className="font-mono text-mono-label font-medium uppercase text-slate">
+                03 / THE PROOF
+              </p>
+              <h2
+                id="proof-heading"
+                className="mt-4 font-display text-display font-bold text-chalk"
+              >
+                Built behind a bar, not in a boardroom.
+              </h2>
+              <p className="mt-6 max-w-[38rem] text-slate">
+                Pour IQ comes from Jerry Can Spirits, the veteran-owned British spirits brand behind
+                Expedition Spiced Rum, an IWSC 2026 medal winner. Founder Dan Freeman served twelve
+                years in the Royal Corps of Signals, then built a drinks brand he sells into the
+                on-trade venue by venue. Pour IQ exists because he kept seeing the same thing
+                everywhere: good venues squeezed to the bone, losing margin they could not see.
+              </p>
+              <p className="mt-8">
+                <Link
+                  href="/about"
+                  className="font-medium text-chalk decoration-measure decoration-2 underline-offset-4 hover:underline"
+                >
+                  Meet the founder
+                </Link>
+              </p>
+            </div>
+            <div className="max-w-[28rem] rounded-lg bg-backbar p-6 sm:p-8">
+              <p className="font-mono text-mono-label font-medium uppercase text-slate">
+                PILOT / 001
+              </p>
+              <p className="mt-6 text-slate">
+                <span className="font-medium text-chalk">The Bank Bar and Grill</span> is Pour
+                IQ&apos;s first pilot venue. The numbers it finds will be published here as they
+                land. Real figures from a real bar, not a case study written by marketing.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     </>
