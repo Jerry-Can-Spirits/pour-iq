@@ -80,6 +80,98 @@
   --ease-pour: var(--pour-ease-pour);
 }
 
+@layer components {
+  /*
+   * The pour — the signature animation. A 2px measure line drops from the
+   * top edge of the viewport to the phrase, then a 3px underline draws
+   * left to right beneath it. CSS only; both parts are absolutely
+   * positioned pseudo-elements animated with transforms, so the sequence
+   * causes no layout shift and no overflow. The pseudos anchor to the span
+   * (not the hero container) so the line always lands on the phrase, at
+   * every viewport width and line wrap.
+   *
+   * Timing comes from the motion tokens: the drop occupies the first
+   * ~500ms of --pour-duration-slow (900ms total) and the draw is
+   * --pour-duration-base (400ms) delayed to start as the drop lands.
+   *
+   * The static state below is the finished composition — underline drawn,
+   * line gone — so reduced-motion users (and pre-animation paint) see the
+   * final layout from the first frame. Animation is opted into under
+   * no-preference only.
+   */
+  .pour-underline {
+    position: relative;
+    white-space: nowrap;
+  }
+
+  /* The underline: 3px, drawn state by default. */
+  .pour-underline::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: -0.12em;
+    height: 3px;
+    background-color: var(--pour-colour-measure);
+    transform-origin: left;
+  }
+
+  /* The vertical line: 100vh tall so it always crosses the top edge of
+     the viewport; extends upward from the underline. Hidden at rest and
+     kept behind the headline glyphs while it travels. */
+  .pour-underline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -0.12em;
+    width: 2px;
+    height: 100vh;
+    background-color: var(--pour-colour-measure);
+    transform-origin: top;
+    opacity: 0;
+    z-index: -1;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .pour-underline::before {
+      animation: pour-drop var(--pour-duration-slow) var(--pour-ease-pour) both;
+    }
+
+    .pour-underline::after {
+      animation: pour-draw var(--pour-duration-base) var(--pour-ease-pour)
+        calc(var(--pour-duration-slow) - var(--pour-duration-base)) both;
+    }
+  }
+}
+
+/* Drop lands at 55.6% of 900ms (~500ms), then the line dissolves as the
+   underline takes over. */
+@keyframes pour-drop {
+  0% {
+    transform: scaleY(0);
+    opacity: 1;
+  }
+  55.6% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  77.8% {
+    opacity: 0;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+@keyframes pour-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @layer base {
   :root {
     /* Tailwind's default --spacing (0.25rem) is re-pointed at the token so

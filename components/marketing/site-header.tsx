@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CtaLink } from './cta-link'
 import { MobileMenu } from './mobile-menu'
 import { navLinks } from './nav-links'
 
@@ -25,12 +26,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <Link
-            href="/contact"
-            className="rounded-md bg-measure px-4 py-2 text-small font-medium whitespace-nowrap text-cellar transition-opacity duration-(--pour-duration-fast) ease-pour hover:opacity-90"
-          >
-            Book a demo
-          </Link>
+          <CtaLink href="/contact">Book a demo</CtaLink>
           <MobileMenu links={navLinks} />
         </div>
       </div>
