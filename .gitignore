@@ -45,3 +45,10 @@ next-env.d.ts
 
 # wrangler local state (created by deploys/preview)
 .wrangler/
+
+# portal (standalone app in portal/ with its own toolchain)
+portal/node_modules
+portal/.next
+portal/.open-next
+portal/next-env.d.ts
+portal/tsconfig.tsbuildinfo

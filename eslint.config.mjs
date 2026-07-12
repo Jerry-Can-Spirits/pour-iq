@@ -21,6 +21,8 @@ const eslintConfig = [
       'out/**',
       'build/**',
       'next-env.d.ts',
+      // The portal is a standalone app with its own toolchain (portal/package.json).
+      'portal/**',
     ],
   },
 ]
