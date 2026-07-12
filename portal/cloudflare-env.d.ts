@@ -18,6 +18,9 @@ interface CloudflareEnv {
   // Secrets — Anthropic (invoice extraction, menu import, AI descriptions)
   ANTHROPIC_API_KEY: string;
 
+  // Secrets — at-rest encryption for stored OAuth tokens (32 bytes, base64)
+  TOKEN_ENCRYPTION_KEY: string;
+
   // Secrets — POS integrations
   SQUARE_APP_ID: string;
   SQUARE_APP_SECRET: string;
