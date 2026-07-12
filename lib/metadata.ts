@@ -1,6 +1,12 @@
 import type { Metadata } from 'next'
 
-export const siteUrl = process.env.SITE_URL ?? 'http://localhost:3000'
+// Production builds must never bake localhost into absolute URLs
+// (canonical, og:image, JSON-LD logo, sitemap) — social scrapers fetch
+// them verbatim. SITE_URL still overrides for previews/staging; dev
+// keeps localhost.
+export const siteUrl =
+  process.env.SITE_URL ??
+  (process.env.NODE_ENV === 'production' ? 'https://pour-iq.co.uk' : 'http://localhost:3000')
 
 // One shared static OG image for every page (per-page images can come later).
 // Committed build asset — see scripts/generate-og-image.ps1. Runtime image

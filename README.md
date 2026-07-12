@@ -63,8 +63,9 @@ Three layers keep the site out of search results until launch (robots.txt alone 
 1. `app/layout.tsx`: delete the `robots: { index: false, follow: false }` line (and its PRE-LAUNCH comment).
 2. `next.config.ts`: delete the `X-Robots-Tag` header entry (and its PRE-LAUNCH comment).
 3. `app/robots.ts`: switch the rule from `disallow: '/'` to `allow: '/'`. The `sitemap` reference is already in place (`app/sitemap.ts` lists all eight routes), so no other change is needed.
-4. Set `SITE_URL=https://pour-iq.co.uk` in the production environment.
-5. Deploy, then verify: `curl -sI https://pour-iq.co.uk` shows **no** `X-Robots-Tag`, page source has **no** `noindex` meta, `/robots.txt` allows crawling and references the sitemap, and `/sitemap.xml` serves all eight routes.
+4. Deploy, then verify: `curl -sI https://pour-iq.co.uk` shows **no** `X-Robots-Tag`, page source has **no** `noindex` meta, `/robots.txt` allows crawling and references the sitemap, and `/sitemap.xml` serves all eight routes.
+
+(`SITE_URL` no longer needs setting at launch: production builds default to `https://pour-iq.co.uk` in code — see Environment.)
 
 ## Brand assets
 
@@ -90,6 +91,8 @@ pwsh scripts/generate-og-image.ps1         # og.png (Windows; System.Drawing)
 ## Environment
 
 Copy `.env.example` to `.env.local`. `SITE_URL` feeds `metadataBase` (canonical URLs, OG URLs); `KLAVIYO_API_KEY` is reserved for the newsletter/contact integration. No secrets are committed anywhere in this repo.
+
+`SITE_URL` is optional: production builds (`pnpm build` / `pnpm deploy`) default to `https://pour-iq.co.uk` and dev defaults to `http://localhost:3000` (`lib/metadata.ts`). Set it only to override — e.g. a staging preview under its own domain. Note Next's env precedence: a `SITE_URL` in `.env.local` overrides everything, including production builds, so keep it out of `.env.local` unless that's what you mean.
 
 ## Commands
 
