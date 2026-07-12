@@ -11,8 +11,8 @@ const footerColumns = [
   {
     heading: 'Legal',
     links: [
-      { label: 'Privacy', href: '/privacy' },
-      { label: 'Terms', href: '/terms' },
+      { label: 'Privacy', href: '/privacy-policy' },
+      { label: 'Terms', href: '/terms-of-service' },
     ],
   },
 ] as const
