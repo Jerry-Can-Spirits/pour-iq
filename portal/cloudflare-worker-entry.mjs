@@ -5,6 +5,8 @@ export * from './.open-next/worker.js'
 import openNextWorker from './.open-next/worker.js'
 import { runHourlyPosBackfill } from './src/lib/pouriq/pos/scheduled.ts'
 import { runAccountingPushSweep } from './src/lib/pouriq/accounting/push.ts'
+import { primeTokenKey } from './src/lib/pouriq/token-crypto.ts'
+import { runRetentionSweep } from './src/lib/pouriq/retention.ts'
 
 const worker = {
   async fetch(request, env, ctx) {
@@ -12,8 +14,16 @@ const worker = {
   },
 
   async scheduled(event, env, ctx) {
+    // No request context here, so the token crypto key must be primed
+    // before any sweep touches an OAuth token.
+    primeTokenKey(env)
     ctx.waitUntil(runHourlyPosBackfill(env))
     ctx.waitUntil(runAccountingPushSweep(env))
+    // Retention enforcement runs once a day, on the 04:00 UTC tick of the
+    // hourly cron.
+    if (new Date(event.scheduledTime).getUTCHours() === 4) {
+      ctx.waitUntil(runRetentionSweep(env))
+    }
   },
 }
 

@@ -1,4 +1,21 @@
 import type { PosAuthMode, PosConnection, PosProvider } from './types'
+import {
+  decryptToken,
+  decryptTokenNullable,
+  encryptToken,
+  encryptTokenNullable,
+} from '../token-crypto'
+
+// OAuth tokens are AES-GCM encrypted at rest (see ../token-crypto). Reads
+// decrypt transparently so callers only ever see plaintext tokens.
+async function withDecryptedTokens(row: PosConnection | null): Promise<PosConnection | null> {
+  if (!row) return null
+  return {
+    ...row,
+    access_token: await decryptToken(row.access_token),
+    refresh_token: await decryptTokenNullable(row.refresh_token),
+  }
+}
 
 export interface NewConnection {
   trade_account_id: string
@@ -37,7 +54,8 @@ export async function upsertConnection(
     `)
     .bind(
       data.trade_account_id, data.provider, data.external_account_id, data.external_location_id,
-      data.access_token, data.refresh_token, data.token_expires_at, data.scopes,
+      await encryptToken(data.access_token), await encryptTokenNullable(data.refresh_token),
+      data.token_expires_at, data.scopes,
       data.auth_mode ?? 'oauth',
     )
     .first<{ id: string }>()
@@ -50,10 +68,12 @@ export async function getConnection(
   tradeAccountId: string,
   provider: PosProvider,
 ): Promise<PosConnection | null> {
-  return await db
-    .prepare(`SELECT * FROM pouriq_pos_connections WHERE trade_account_id = ?1 AND provider = ?2`)
-    .bind(tradeAccountId, provider)
-    .first<PosConnection>()
+  return withDecryptedTokens(
+    await db
+      .prepare(`SELECT * FROM pouriq_pos_connections WHERE trade_account_id = ?1 AND provider = ?2`)
+      .bind(tradeAccountId, provider)
+      .first<PosConnection>(),
+  )
 }
 
 export async function listConnections(
@@ -64,7 +84,9 @@ export async function listConnections(
     .prepare(`SELECT * FROM pouriq_pos_connections WHERE trade_account_id = ?1`)
     .bind(tradeAccountId)
     .all<PosConnection>()
-  return result.results ?? []
+  return Promise.all(
+    (result.results ?? []).map(async (row) => (await withDecryptedTokens(row)) as PosConnection),
+  )
 }
 
 export async function findConnectionByExternalAccount(
@@ -72,10 +94,12 @@ export async function findConnectionByExternalAccount(
   provider: PosProvider,
   externalAccountId: string,
 ): Promise<PosConnection | null> {
-  return await db
-    .prepare(`SELECT * FROM pouriq_pos_connections WHERE provider = ?1 AND external_account_id = ?2`)
-    .bind(provider, externalAccountId)
-    .first<PosConnection>()
+  return withDecryptedTokens(
+    await db
+      .prepare(`SELECT * FROM pouriq_pos_connections WHERE provider = ?1 AND external_account_id = ?2`)
+      .bind(provider, externalAccountId)
+      .first<PosConnection>(),
+  )
 }
 
 export async function deleteConnection(
@@ -103,7 +127,12 @@ export async function updateConnectionTokens(
           updated_at = datetime('now')
       WHERE id = ?4
     `)
-    .bind(tokens.accessToken, tokens.refreshToken, tokens.expiresAt, connectionId)
+    .bind(
+      await encryptToken(tokens.accessToken),
+      await encryptTokenNullable(tokens.refreshToken),
+      tokens.expiresAt,
+      connectionId,
+    )
     .run()
 }
 

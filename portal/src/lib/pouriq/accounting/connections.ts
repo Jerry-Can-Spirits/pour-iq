@@ -1,4 +1,23 @@
 import type { AccountingConnection, AccountingProvider, AccountingTokenSet } from './types'
+import {
+  decryptToken,
+  decryptTokenNullable,
+  encryptToken,
+  encryptTokenNullable,
+} from '../token-crypto'
+
+// OAuth tokens are AES-GCM encrypted at rest (see ../token-crypto). Reads
+// decrypt transparently so callers only ever see plaintext tokens.
+async function withDecryptedTokens(
+  row: AccountingConnection | null,
+): Promise<AccountingConnection | null> {
+  if (!row) return null
+  return {
+    ...row,
+    access_token: await decryptToken(row.access_token),
+    refresh_token: await decryptTokenNullable(row.refresh_token),
+  }
+}
 
 export interface NewAccountingConnection {
   trade_account_id: string
@@ -33,7 +52,8 @@ export async function upsertAccountingConnection(
     `)
     .bind(
       data.trade_account_id, data.provider, data.external_account_id, data.external_account_name,
-      data.access_token, data.refresh_token, data.token_expires_at,
+      await encryptToken(data.access_token), await encryptTokenNullable(data.refresh_token),
+      data.token_expires_at,
     )
     .first<{ id: string }>()
   if (!result) throw new Error('Accounting connection upsert returned no id')
@@ -45,10 +65,12 @@ export async function getAccountingConnection(
   tradeAccountId: string,
   provider: AccountingProvider,
 ): Promise<AccountingConnection | null> {
-  return await db
-    .prepare(`SELECT * FROM pouriq_accounting_connections WHERE trade_account_id = ?1 AND provider = ?2`)
-    .bind(tradeAccountId, provider)
-    .first<AccountingConnection>()
+  return withDecryptedTokens(
+    await db
+      .prepare(`SELECT * FROM pouriq_accounting_connections WHERE trade_account_id = ?1 AND provider = ?2`)
+      .bind(tradeAccountId, provider)
+      .first<AccountingConnection>(),
+  )
 }
 
 export async function listAccountingConnections(
@@ -59,7 +81,11 @@ export async function listAccountingConnections(
     .prepare(`SELECT * FROM pouriq_accounting_connections WHERE trade_account_id = ?1`)
     .bind(tradeAccountId)
     .all<AccountingConnection>()
-  return result.results ?? []
+  return Promise.all(
+    (result.results ?? []).map(
+      async (row) => (await withDecryptedTokens(row)) as AccountingConnection,
+    ),
+  )
 }
 
 export async function deleteAccountingConnection(
@@ -87,7 +113,12 @@ export async function updateAccountingTokens(
           updated_at = datetime('now')
       WHERE id = ?4
     `)
-    .bind(tokens.accessToken, tokens.refreshToken, tokens.expiresAt, connectionId)
+    .bind(
+      await encryptToken(tokens.accessToken),
+      await encryptTokenNullable(tokens.refreshToken),
+      tokens.expiresAt,
+      connectionId,
+    )
     .run()
 }
 
