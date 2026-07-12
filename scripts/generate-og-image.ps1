@@ -79,23 +79,24 @@ try {
 
   $left = 100.0
   $wordmark = 'Pour IQ'
+  $wordmarkY = 200.0
   $wordmarkSize = $g.MeasureString($wordmark, $displayFont, [System.Drawing.PointF]::new(0, 0), $format)
 
-  # The pour mark: the site draws a 3px measure rule at -0.12em; scaled to
-  # this canvas that lands at 10px, sitting just under the baseline. The
-  # vertical pour stroke (2:3 ratio -> 7px here) descends from the card's
-  # top edge and lands flush with the underline's bottom at its left end,
-  # matching public/brand/pour-mark.svg and the hero pour geometry. Drawn
-  # before the wordmark so the line travels behind the glyphs, as the
-  # hero's z-index -1 does.
-  $underlineY = 200.0 + $wordmarkSize.Height + 8
-  $g.FillRectangle($measureBrush, $left, 0.0, 7, $underlineY + 10)
-  $g.FillRectangle($measureBrush, $left, $underlineY, $wordmarkSize.Width, 10)
+  # The pour mark beside the wordmark, vertically centred against it.
+  # Geometry mirrors public/brand/pour-mark.svg (64 box: vertical x30 y0
+  # w4 h42, horizontal x6 y48 w52 h6 - centred pour, strokes never
+  # touching, 2:3 weight ratio), scaled 2.5x for the card.
+  $s = 2.5
+  $markY = $wordmarkY + ($wordmarkSize.Height - 64 * $s) / 2
+  $g.FillRectangle($measureBrush, $left + 30 * $s, $markY, 4 * $s, 42 * $s)
+  $g.FillRectangle($measureBrush, $left + 6 * $s, $markY + 48 * $s, 52 * $s, 6 * $s)
 
-  $g.DrawString($wordmark, $displayFont, $chalkBrush, $left, 200.0, $format)
+  # Wordmark to the right of the mark's 64-unit box, plus a gap.
+  $textX = $left + 64 * $s + 40
+  $g.DrawString($wordmark, $displayFont, $chalkBrush, $textX, $wordmarkY, $format)
 
   $tagline = 'Menu and cost engineering for UK bars.'
-  $g.DrawString($tagline, $bodyFont, $slateBrush, $left, $underlineY + 56, $format)
+  $g.DrawString($tagline, $bodyFont, $slateBrush, $textX, $wordmarkY + $wordmarkSize.Height + 40, $format)
 
   New-Item -ItemType Directory -Force (Split-Path -Parent $outPath) | Out-Null
   $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)

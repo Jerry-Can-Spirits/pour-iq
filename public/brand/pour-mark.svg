@@ -1,16 +1,20 @@
 <!--
   The Pour IQ mark: the site's hero pour signature, formalised. A thin
-  vertical stroke descends from the top edge and resolves into the
-  horizontal underline at the baseline, bottoms flush at the left end
-  (mirroring .pour-underline::before/::after in app/globals.css: the
-  2px vertical and 3px underline share the same bottom line, vertical at
-  left 0). Stroke widths keep the CSS 2:3 ratio (4 and 6 at this scale).
+  vertical stroke pours down the centre and terminates clear of a wide
+  horizontal stroke - the level measure it fills. The strokes never
+  touch; the gap below the vertical is one horizontal stroke-width.
+  Stroke weights keep the pour CSS 2:3 ratio (4 and 6 at this scale).
+
+  This composition is deliberately distinct from the hero pour's
+  corner-join (.pour-underline in app/globals.css, which is unchanged):
+  standalone, the corner reads as the letter L, so the mark centres the
+  pour over the measure instead.
 
   Colour: fill is currentColor so embedding contexts can restyle the
   mark; the root color attribute defaults it to the measure token,
   #D98E2B (lib/design-tokens.ts, colours.measure).
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" color="#D98E2B" role="img" aria-label="Pour IQ mark">
-  <rect fill="currentColor" x="10" y="0" width="4" height="52"/>
-  <rect fill="currentColor" x="10" y="46" width="44" height="6"/>
+  <rect fill="currentColor" x="30" y="0" width="4" height="42"/>
+  <rect fill="currentColor" x="6" y="48" width="52" height="6"/>
 </svg>

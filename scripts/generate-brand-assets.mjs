@@ -54,16 +54,17 @@ async function generateLockup() {
   const font = opentype.parse((await readFile(await getBricolageTtf())).buffer)
 
   // Mark geometry from public/brand/pour-mark.svg (2:3 stroke ratio,
-  // bottoms flush at the left end of the underline).
+  // centred pour terminating one horizontal stroke-width clear of the
+  // level measure - the strokes never touch).
   const mark = [
-    '<rect fill="#D98E2B" x="10" y="0" width="4" height="52"/>',
-    '<rect fill="#D98E2B" x="10" y="46" width="44" height="6"/>',
+    '<rect fill="#D98E2B" x="30" y="0" width="4" height="42"/>',
+    '<rect fill="#D98E2B" x="6" y="48" width="52" height="6"/>',
   ].join('\n  ')
 
-  // Wordmark baseline sits so the mark's underline (y 46-52) reads as the
-  // rule beneath the text, echoing the hero's pour-underline.
+  // Wordmark baseline sits so the mark's measure stroke (y 48-54) aligns
+  // with the text baseline zone.
   const fontSize = 46
-  const textX = 72
+  const textX = 76
   const baseline = 48
 
   // Outline glyph by glyph with manual advances and kerning: the font's
