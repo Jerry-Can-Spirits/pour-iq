@@ -26,6 +26,12 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <a
+            href="https://app.pour-iq.co.uk"
+            className="mr-2 hidden font-medium text-slate decoration-measure decoration-2 underline-offset-4 transition-colors duration-(--pour-duration-fast) ease-pour hover:text-chalk hover:underline lg:block"
+          >
+            Sign in
+          </a>
           <CtaLink href="/contact">Book a demo</CtaLink>
           <MobileMenu links={navLinks} />
         </div>
