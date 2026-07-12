@@ -59,7 +59,7 @@ async function purgeVenueData(db: D1Database, accountId: string): Promise<void> 
   await run(`DELETE FROM pouriq_menus WHERE trade_account_id = ?1`)
   await run(`DELETE FROM pouriq_stock_count_events WHERE trade_account_id = ?1`)
   await run(`DELETE FROM pouriq_stock_receipts WHERE trade_account_id = ?1`)
-  await run(`DELETE FROM pouriq_production_components WHERE event_id IN (SELECT id FROM pouriq_production_events WHERE trade_account_id = ?1)`)
+  await run(`DELETE FROM pouriq_production_components WHERE production_event_id IN (SELECT id FROM pouriq_production_events WHERE trade_account_id = ?1)`)
   await run(`DELETE FROM pouriq_production_events WHERE trade_account_id = ?1`)
   await run(`DELETE FROM pouriq_voice_profiles WHERE trade_account_id = ?1`)
 

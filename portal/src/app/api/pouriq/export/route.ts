@@ -39,7 +39,7 @@ const JOINED: ReadonlyArray<{ table: string; via: string }> = [
   { table: 'pouriq_ingredient_serve_units', via: 'library_ingredient_id IN (SELECT id FROM pouriq_ingredients_library WHERE trade_account_id = ?1)' },
   { table: 'pouriq_ingredient_uses', via: 'ingredient_id IN (SELECT id FROM pouriq_ingredients_library WHERE trade_account_id = ?1)' },
   { table: 'pouriq_prepared_components', via: 'prepared_ingredient_id IN (SELECT id FROM pouriq_ingredients_library WHERE trade_account_id = ?1)' },
-  { table: 'pouriq_production_components', via: 'event_id IN (SELECT id FROM pouriq_production_events WHERE trade_account_id = ?1)' },
+  { table: 'pouriq_production_components', via: 'production_event_id IN (SELECT id FROM pouriq_production_events WHERE trade_account_id = ?1)' },
 ]
 
 export async function GET() {
