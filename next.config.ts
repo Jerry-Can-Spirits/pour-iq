@@ -22,6 +22,16 @@ const csp = [
 ].join('; ')
 
 const nextConfig: NextConfig = {
+  // The legal routes moved to match the URLs registered with external
+  // services (OAuth app registrations point at /terms-of-service/ and
+  // /privacy-policy/). Permanent redirects keep anything still linking
+  // the old paths working.
+  async redirects() {
+    return [
+      { source: '/privacy', destination: '/privacy-policy', permanent: true },
+      { source: '/terms', destination: '/terms-of-service', permanent: true },
+    ]
+  },
   async headers() {
     return [
       {

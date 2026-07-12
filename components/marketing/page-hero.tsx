@@ -10,7 +10,7 @@ export function PageHero({
   label: string
   title: string
   headingId: string
-  intro: string
+  intro?: string
 }) {
   return (
     <section aria-labelledby={headingId} className="py-section-y">
@@ -22,7 +22,7 @@ export function PageHero({
         >
           {title}
         </h1>
-        <p className="mt-6 max-w-[38rem] text-slate">{intro}</p>
+        {intro && <p className="mt-6 max-w-[38rem] text-slate">{intro}</p>}
       </div>
     </section>
   )
