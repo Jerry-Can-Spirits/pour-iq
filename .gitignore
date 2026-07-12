@@ -42,3 +42,6 @@ next-env.d.ts
 
 # OpenNext build output
 .open-next
+
+# wrangler local state (created by deploys/preview)
+.wrangler/

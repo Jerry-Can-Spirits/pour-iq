@@ -47,6 +47,7 @@ function New-PrivateFont([string]$TtfPath, [float]$SizePx) {
 
 $displayTtf = Get-GoogleFontTtf 'Bricolage Grotesque' 800
 $bodyTtf = Get-GoogleFontTtf 'Instrument Sans' 400
+$ctaTtf = Get-GoogleFontTtf 'Instrument Sans' 500
 
 # lib/design-tokens.ts colours
 $cellar = [System.Drawing.ColorTranslator]::FromHtml('#0F1D18')
@@ -72,6 +73,7 @@ try {
 
   $displayFont = New-PrivateFont $displayTtf 148
   $bodyFont = New-PrivateFont $bodyTtf 42
+  $ctaFont = New-PrivateFont $ctaTtf 36
 
   # The logotype: the wordmark with the pour integrated, as the hero and
   # the lockup SVG. Measure underline spanning the wordmark's width, clear
@@ -81,16 +83,28 @@ try {
   # margins; no full-canvas framing lines.
   $wordmark = 'Pour IQ'
   $tagline = 'Menu and cost engineering for UK bars.'
+  $cta = 'Book a demo'
   $wordmarkSize = $g.MeasureString($wordmark, $displayFont, [System.Drawing.PointF]::new(0, 0), $format)
   $taglineSize = $g.MeasureString($tagline, $bodyFont, [System.Drawing.PointF]::new(0, 0), $format)
+  $ctaSize = $g.MeasureString($cta, $ctaFont, [System.Drawing.PointF]::new(0, 0), $format)
 
   $capAbove = 106.0   # ~cap height at 148px: bounded drop, not the canvas edge
   $ulClear = 16.0     # visible clearance below the Q descender
   $ulH = 10.0
   $tagGap = 48.0
 
+  # The CTA pill mirrors the site's CtaLink: measure fill, cellar text,
+  # established "Book a demo" copy. Padding and radius scale the site's
+  # px-4 py-2 rounded-md proportions to the 36px CTA face.
+  $ctaGap = 56.0
+  $ctaPadX = 40.0
+  $ctaPadY = 20.0
+  $ctaRadius = 12.0
+  $pillW = $ctaSize.Width + 2 * $ctaPadX
+  $pillH = $ctaSize.Height + 2 * $ctaPadY
+
   $blockW = [Math]::Max($wordmarkSize.Width, $taglineSize.Width)
-  $blockH = $capAbove + $wordmarkSize.Height + $ulClear + $ulH + $tagGap + $taglineSize.Height
+  $blockH = $capAbove + $wordmarkSize.Height + $ulClear + $ulH + $tagGap + $taglineSize.Height + $ctaGap + $pillH
   $left = (1200 - $blockW) / 2
   $wordmarkY = (630 - $blockH) / 2 + $capAbove
   $underlineY = $wordmarkY + $wordmarkSize.Height + $ulClear
@@ -100,6 +114,18 @@ try {
   $g.FillRectangle($measureBrush, $left, $underlineY, $wordmarkSize.Width, $ulH)
   $g.DrawString($wordmark, $displayFont, $chalkBrush, $left, $wordmarkY, $format)
   $g.DrawString($tagline, $bodyFont, $slateBrush, $left, $underlineY + $ulH + $tagGap, $format)
+
+  $pillY = $underlineY + $ulH + $tagGap + $taglineSize.Height + $ctaGap
+  $pill = New-Object System.Drawing.Drawing2D.GraphicsPath
+  $d = 2 * $ctaRadius
+  $pill.AddArc($left, $pillY, $d, $d, 180, 90)
+  $pill.AddArc($left + $pillW - $d, $pillY, $d, $d, 270, 90)
+  $pill.AddArc($left + $pillW - $d, $pillY + $pillH - $d, $d, $d, 0, 90)
+  $pill.AddArc($left, $pillY + $pillH - $d, $d, $d, 90, 90)
+  $pill.CloseFigure()
+  $g.FillPath($measureBrush, $pill)
+  $cellarBrush = New-Object System.Drawing.SolidBrush($cellar)
+  $g.DrawString($cta, $ctaFont, $cellarBrush, $left + $ctaPadX, $pillY + $ctaPadY, $format)
 
   New-Item -ItemType Directory -Force (Split-Path -Parent $outPath) | Out-Null
   $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
