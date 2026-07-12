@@ -62,10 +62,6 @@ try {
   $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAlias
   $g.Clear($cellar)
 
-  # Hairline frame, echoing the site's backbar card borders.
-  $framePen = New-Object System.Drawing.Pen($backbar, 2)
-  $g.DrawRectangle($framePen, 1, 1, 1197, 627)
-
   $chalkBrush = New-Object System.Drawing.SolidBrush($chalk)
   $slateBrush = New-Object System.Drawing.SolidBrush($slate)
   $measureBrush = New-Object System.Drawing.SolidBrush($measure)
@@ -77,25 +73,33 @@ try {
   $displayFont = New-PrivateFont $displayTtf 148
   $bodyFont = New-PrivateFont $bodyTtf 42
 
-  $left = 100.0
+  # The logotype: the wordmark with the pour integrated, as the hero and
+  # the lockup SVG. Measure underline spanning the wordmark's width, clear
+  # below the Q descender; vertical pour stroke (2:3 weight ratio, 7:10
+  # here) descending into the underline's left end from roughly cap-height
+  # above the wordmark. The whole block is optically centred with balanced
+  # margins; no full-canvas framing lines.
   $wordmark = 'Pour IQ'
-  $wordmarkSize = $g.MeasureString($wordmark, $displayFont, [System.Drawing.PointF]::new(0, 0), $format)
-
-  # The pour mark: the site draws a 3px measure rule at -0.12em; scaled to
-  # this canvas that lands at 10px, sitting just under the baseline. The
-  # vertical pour stroke (2:3 ratio -> 7px here) descends from the card's
-  # top edge and lands flush with the underline's bottom at its left end,
-  # matching public/brand/pour-mark.svg and the hero pour geometry. Drawn
-  # before the wordmark so the line travels behind the glyphs, as the
-  # hero's z-index -1 does.
-  $underlineY = 200.0 + $wordmarkSize.Height + 8
-  $g.FillRectangle($measureBrush, $left, 0.0, 7, $underlineY + 10)
-  $g.FillRectangle($measureBrush, $left, $underlineY, $wordmarkSize.Width, 10)
-
-  $g.DrawString($wordmark, $displayFont, $chalkBrush, $left, 200.0, $format)
-
   $tagline = 'Menu and cost engineering for UK bars.'
-  $g.DrawString($tagline, $bodyFont, $slateBrush, $left, $underlineY + 56, $format)
+  $wordmarkSize = $g.MeasureString($wordmark, $displayFont, [System.Drawing.PointF]::new(0, 0), $format)
+  $taglineSize = $g.MeasureString($tagline, $bodyFont, [System.Drawing.PointF]::new(0, 0), $format)
+
+  $capAbove = 106.0   # ~cap height at 148px: bounded drop, not the canvas edge
+  $ulClear = 16.0     # visible clearance below the Q descender
+  $ulH = 10.0
+  $tagGap = 48.0
+
+  $blockW = [Math]::Max($wordmarkSize.Width, $taglineSize.Width)
+  $blockH = $capAbove + $wordmarkSize.Height + $ulClear + $ulH + $tagGap + $taglineSize.Height
+  $left = (1200 - $blockW) / 2
+  $wordmarkY = (630 - $blockH) / 2 + $capAbove
+  $underlineY = $wordmarkY + $wordmarkSize.Height + $ulClear
+
+  # Pour strokes first so the vertical travels behind the glyphs.
+  $g.FillRectangle($measureBrush, $left, $wordmarkY - $capAbove, 7, $underlineY + $ulH - ($wordmarkY - $capAbove))
+  $g.FillRectangle($measureBrush, $left, $underlineY, $wordmarkSize.Width, $ulH)
+  $g.DrawString($wordmark, $displayFont, $chalkBrush, $left, $wordmarkY, $format)
+  $g.DrawString($tagline, $bodyFont, $slateBrush, $left, $underlineY + $ulH + $tagGap, $format)
 
   New-Item -ItemType Directory -Force (Split-Path -Parent $outPath) | Out-Null
   $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)

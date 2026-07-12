@@ -1,0 +1,21 @@
+<!--
+  Hand-tuned 16px favicon drawing of the IQ tile: the true letterforms
+  (iq-tile.svg) turn to mush at 16px, so this slice simplifies them -
+  the I is a plain stem, the Q a plain ring with its tail kept as a
+  bold, straight diagonal stub crossing the ring at the lower right
+  (the tail is never dropped: without it the Q reads as an O), counters
+  opened up and strokes thickened. No vertical pour stroke: that stroke
+  appears only in assets carrying the word "Pour". Used only for the
+  16px ICO entry; 32px and above rasterise iq-tile.svg.
+
+  Colours from lib/design-tokens.ts: tile cellar #0F1D18, letters chalk
+  #F2EFE6, underline measure #D98E2B. Corner radius 8 is the radius-md
+  token.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Pour IQ">
+  <rect fill="#0F1D18" x="0" y="0" width="64" height="64" rx="8"/>
+  <rect fill="#F2EFE6" x="10" y="10" width="9" height="28"/>
+  <circle fill="none" stroke="#F2EFE6" stroke-width="8" cx="41" cy="24" r="10"/>
+  <path stroke="#F2EFE6" stroke-width="7" d="M45 29 L56 40"/>
+  <rect fill="#D98E2B" x="10" y="48" width="45" height="8"/>
+</svg>

@@ -68,21 +68,22 @@ Three layers keep the site out of search results until launch (robots.txt alone 
 
 ## Brand assets
 
-Vector sources are the single source of truth; every raster asset is derived from an SVG, never the reverse. Colours are token values traced to `lib/design-tokens.ts` in each file's comments.
+The identity is the logotype: the "Pour IQ" wordmark with the pour integrated, exactly as the site hero draws it. Where space allows, use the full lockup; where it does not (favicons, app icons, avatars), the IQ-and-underline tile. Nothing else exists — there is no standalone abstract mark, and the vertical pour stroke appears only alongside the word "Pour" (standalone it reads as the letter L).
+
+Vector sources are the single source of truth; every raster asset is derived from a committed SVG, never the reverse. Colours are token values traced to `lib/design-tokens.ts` in each file's comments.
 
 | File                                                                                                                 | Context                                                                                                                                                                                        |
 | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `public/brand/pour-mark.svg`                                                                                         | The mark: the hero pour formalised. `currentColor` fill with a measure default — restyle by setting `color` on the embedding context.                                                          |
-| `public/brand/pour-mark-mono.svg`                                                                                    | Single-colour mark, pure `currentColor`, for print and embeds.                                                                                                                                 |
-| `public/brand/pour-mark-on-cellar.svg`                                                                               | The mark on a cellar rounded-square tile (radius-md) for contained contexts: favicons, app icons, avatars.                                                                                     |
-| `public/brand/pour-iq-lockup.svg`                                                                                    | Mark plus wordmark, with "Pour IQ" outlined from Bricolage Grotesque 800 — no font dependency, renders identically everywhere. Generated; do not edit by hand.                                 |
+| `public/brand/pour-iq-lockup.svg`                                                                                    | The logotype: "Pour IQ" outlined from Bricolage Grotesque 800 (no font dependency) with the measure underline and vertical pour stroke. Generated; do not edit by hand.                        |
+| `public/brand/iq-tile.svg`                                                                                           | "IQ" over the measure underline on the cellar tile (radius-md), true letterforms — use at 32px and above. Generated; do not edit by hand.                                                      |
+| `public/brand/iq-tile-16.svg`                                                                                        | Hand-tuned simplified drawing for the 16px favicon slice only: plain I stem, Q ring with a bold straight tail (never dropped), thicker strokes.                                                |
 | `public/icon.svg`, `public/favicon.ico`, `public/apple-touch-icon.png`, `public/icon-192.png`, `public/icon-512.png` | Favicon and app-icon derivatives of the tile, wired through the metadata icons API in `app/layout.tsx` and `public/site.webmanifest`. `icon-512.png` doubles as the Organization JSON-LD logo. |
-| `public/og.png`                                                                                                      | The 1200×630 social card.                                                                                                                                                                      |
+| `public/og.png`                                                                                                      | The 1200×630 social card: the logotype optically centred, tagline beneath.                                                                                                                     |
 
 Regenerate with:
 
 ```
-pnpm brand:generate                        # lockup, favicons, app icons (from the SVGs)
+pnpm brand:generate                        # lockup, tile, favicons, app icons
 pwsh scripts/generate-og-image.ps1         # og.png (Windows; System.Drawing)
 ```
 
