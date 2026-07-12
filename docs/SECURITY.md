@@ -58,11 +58,31 @@ Dependabot covers the **root manifest only** — `portal/package.json` is not wa
 
 ---
 
-## Gaps (follow-up PR candidates, in rough priority order)
+## Reference implementations
 
-1. **Portal CSP** — add a CSP (plus Permissions-Policy and COOP) to `portal/next.config.ts`. The portal loads no third-party scripts, so the policy can be strict.
-2. **Hash trade PINs** (shared with JCS — same ported code). Salted hash, constant-time compare; migrate rows on first successful login or by reissue.
-3. **Vulnerability disclosure** — no `security.txt` and no security policy page on either surface. Add `.well-known/security.txt` and a policy page (the JCS `/security-policy` is the model), with one consistent contact address.
-4. **CI and Dependabot for the portal** — add `portal/` as a Dependabot directory and a CI job that lints, typechecks, and builds the portal; add Dependabot reviewers.
-5. **Launch-day CSP decision** (existing README TODO) — nonce-based CSP via middleware or a dated acceptance of `'unsafe-inline'`; plus Permissions-Policy/COOP on the marketing site.
-6. **Housekeeping** — add `.dev.vars` to `.gitignore`; remove or clearly mark the unused `KLAVIYO_API_KEY` in `.env.example`.
+Each shared control names the repo whose implementation is canonical, so fixes port rather than get reinvented and the repos cannot drift back apart. When a control ships its first implementation, name it here and in the JCS copy of this file in the same PR.
+
+- **Token encryption at rest** — reference: this repo's portal (`portal/src/lib/pouriq/token-crypto.ts`). JCS ports it.
+- **Credential (PIN) hashing** — no reference yet; unimplemented in both repos. Whichever repo ships first becomes the reference.
+- **Consent gating of third parties** — reference: JCS (Cookiebot + Consent Mode v2, per-component gating).
+- **Vulnerability disclosure** — reference: JCS (`security.txt` + `/security-policy`).
+- **Data retention, export, and residency** — reference: this repo's portal (`retention.ts`, the export endpoint, WEUR pinning).
+
+---
+
+## Gaps (in rough priority order — sequenced against the pre-August board)
+
+1. **Hash trade PINs** (shared with JCS — same ported code). In the portal the PIN *is* the login: one plaintext PIN per venue in D1. Hash (Argon2/bcrypt-class — hashing, not encryption, since a PIN only ever needs verifying), constant-time compare, migrate existing rows — **before The Bank's real account is created**, so the pilot never has a plaintext-credential era.
+2. **Portal CSP** — add a CSP (plus Permissions-Policy and COOP) to `portal/next.config.ts`. The portal is an app, not a prerendered site, so the marketing site's nonce-versus-static dilemma does not apply; the policy can be strict. Permissions-Policy allows camera (self only) for barcode scanning.
+3. **CI and Dependabot for the portal** — add `portal/` as a Dependabot directory and a CI job that typechecks and builds the portal; add Dependabot reviewers. Until then, the app code that ships to venues is the code with no automated checks.
+4. **Token-encryption backfill** — the compliance PR encrypts on write only (`decryptToken` passes legacy plaintext through, and no backfill migration exists), so plaintext rows can survive until a connection's next token refresh. Run a one-off backfill, or verify none remain: `SELECT COUNT(*) ... WHERE access_token NOT LIKE 'enc:v1:%'` across both connections tables. The JCS port needs the same backfill from day one.
+5. **Vulnerability disclosure** — no `security.txt` and no security policy page on either surface. Add `.well-known/security.txt` and a policy page (the JCS `/security-policy` is the model). Canonical contact address: `security@jerrycanspirits.co.uk`.
+6. **Launch-day CSP decision** (existing README TODO) — nonce-based CSP via middleware or a dated acceptance of `'unsafe-inline'`; plus Permissions-Policy/COOP on the marketing site.
+7. **Housekeeping** — add `.dev.vars` to `.gitignore`; remove or clearly mark the unused `KLAVIYO_API_KEY` in `.env.example`.
+
+## Standing verification notes
+
+Warnings recorded here rather than in PR descriptions, where they go to be forgotten:
+
+- **Region pinning vs privacy policy wording** — D1/KV/R2 are WEUR-pinned; confirm the privacy policy's data-location wording matches what WEUR actually guarantees, and revisit if Cloudflare's residency semantics change.
+- **Retention-sweep dry run, 2028** — the first venue-data deletions under the 2-year rule cannot occur before 2028. Before the first real deletion window opens, dry-run `retention.ts` against production data and verify the tombstone and HMRC-invoice behaviour match the privacy policy.

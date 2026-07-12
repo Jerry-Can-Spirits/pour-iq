@@ -2,6 +2,8 @@
 
 This document is binding for all customer-facing words: the marketing site, the portal, email, and anything else a venue reads. It was derived from the copy already shipped on pour-iq.co.uk and in the portal, so it describes the voice the product actually has. `CLAUDE.md` carries the highest-priority copy rules (byte-exact implementation of provided copy, claim verification, legal-date coupling); nothing here overrides them.
 
+This document describes the voice for **evaluating and implementing** copy; it does not authorise drafting copy autonomously. Copy is decided in conversation and implemented byte-exact, per `CLAUDE.md`.
+
 Pour IQ shares a discipline spine with Jerry Can Spirits (`docs/VOICE.md` in the `jerry-can-spirits` repo): no hype, no filler, one CTA, write to one person. But Pour IQ is software speaking to a working venue, not a spirits brand speaking to a drinker. Do not write Pour IQ copy in the JCS register or vice versa.
 
 ---
@@ -24,7 +26,7 @@ The company is one accountable person, not a corporate "we". "When you email, yo
 - One CTA per piece of content.
 - Write to one person: the owner or manager of one venue.
 - No manufactured urgency, no fake scarcity.
-- Numbers spelled out in prose ("twenty minutes", "ninety days"); numerals reserved for money and data (£8.50, 4%, 550 ingredients).
+- Counts and durations in words in prose ("twelve years", "ninety days", "forty of those a week"); money and percentages as figures (£8.50, £915, 4%), set in mono even mid-sentence — "Forty of those a week is £915 a year" carries both halves of the rule in one line. Large catalogue counts may stay numerals ("around 550 ingredients").
 - Short declaratives are the rhythm hammer; longer sentences build on triplets ("reads every line, logs every price, and flags what moved").
 
 ## The claims discipline
