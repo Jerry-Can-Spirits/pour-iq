@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Bricolage_Grotesque, IBM_Plex_Mono, Instrument_Sans } from 'next/font/google'
 import { tokenCssVariables } from '@/lib/design-tokens'
+import { siteUrl } from '@/lib/metadata'
 import './globals.css'
 
 // next/font self-hosts every face at build time — no runtime requests to a
@@ -25,8 +26,6 @@ const monoFont = IBM_Plex_Mono({
   variable: '--font-ibm-plex-mono',
   display: 'swap',
 })
-
-const siteUrl = process.env.SITE_URL ?? 'http://localhost:3000'
 
 // Facts only: no ratings, reviews, or aggregate data of any kind. The
 // existing CSP (script-src 'self' 'unsafe-inline') permits inline JSON-LD.
