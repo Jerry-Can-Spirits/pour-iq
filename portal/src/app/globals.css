@@ -1,0 +1,22 @@
+/* Pour IQ portal styles. The app's "Daylight" identity is stock Tailwind
+   (slate/white/emerald/amber/rose) via shared class strings in
+   src/lib/pouriq/ui.ts. The heritage tokens below exist only for the two
+   surfaces ported with Jerry Can Spirits styling (login page, onboarding
+   sheet) — restyling those to the Pour IQ identity is a follow-up, after
+   which these tokens can go. */
+
+@import 'tailwindcss';
+
+@theme {
+  --color-jerry-green-950: #0e2519;
+  --color-gold-300: #fcd34d;
+  --color-gold-500: #f59e0b;
+  --color-parchment-100: #fcf9f3;
+  --color-parchment-200: #f7f1e3;
+  --color-parchment-300: #f1e7d0;
+  --color-parchment-400: #e9d8b7;
+}
+
+html {
+  font-family: var(--font-inter), system-ui, sans-serif;
+}

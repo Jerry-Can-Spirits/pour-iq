@@ -6,7 +6,7 @@ The public marketing and SEO site for [Pour IQ](https://pour-iq.co.uk), the menu
 
 **Phase 1 (this codebase today): marketing only.** Static or server-rendered pages, no authentication, no app code. The Pour IQ app currently lives inside the Jerry Can Spirits site behind a licence wall.
 
-**Phase 2 (later): the app migrates into this codebase.** The exact shape is TBC — either an authenticated route group (e.g. `app/(app)/…`) or a subdomain (`app.pour-iq.co.uk`). The structure below keeps marketing and app concerns separated from the first commit so that migration slots in without a restructure:
+**Phase 2 (done 2026-07-12): the app lives in `portal/`.** The authenticated Pour IQ app — ported from the Jerry Can Spirits repo — is a standalone Next.js project at `portal/`, deployed as its own Cloudflare Worker at **app.pour-iq.co.uk** with its own D1 database (`pour-iq-db`), KV namespace, and R2 bucket, all Pour IQ-owned (WEUR region) and separate from JCS infrastructure. It has its own `package.json`, toolchain, and `wrangler.jsonc`; the root project's lint/typecheck/prettier deliberately exclude it. Work inside `portal/` with `cd portal && pnpm <script>`. The structure below keeps marketing and app concerns separated:
 
 - `app/(marketing)/` — everything public. New marketing pages go here, never in `app/` root.
 - `components/marketing/` — components only marketing pages use.

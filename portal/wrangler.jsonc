@@ -1,0 +1,51 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pour-iq-portal",
+  "main": "./cloudflare-worker-entry.mjs",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  // Fresh Pour IQ-owned resources — deliberately not the Jerry Can Spirits
+  // bindings; the entities are separate. D1 and R2 are placed in WEUR
+  // (Western Europe), matching the privacy policy's data-residency claim.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pour-iq-db",
+      "database_id": "babf3701-bb03-423d-ab0d-592fc6eb64e4",
+    },
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SITE_OPS",
+      "id": "9a736eada2ec4a64bf92f0ee6d6fb41a",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "TRADE_DOCS",
+      "bucket_name": "pour-iq-docs",
+    },
+  ],
+  "routes": [
+    {
+      "pattern": "app.pour-iq.co.uk",
+      "custom_domain": true,
+    },
+  ],
+  // Hourly: POS sales backfill + accounting push retry sweep.
+  "triggers": {
+    "crons": ["0 * * * *"],
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+    },
+  },
+}
