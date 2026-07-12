@@ -1,19 +1,24 @@
-// Generates every raster brand asset and the lockup SVG from the
-// hand-authored vector sources in public/brand. Run and commit the output:
+// Generates the brand vector and raster assets. The identity is the
+// logotype: the "Pour IQ" wordmark with the pour integrated, matching the
+// site hero (measure underline beneath the wordmark, vertical pour stroke
+// descending into its left end). Where space is too tight for the full
+// wordmark, the IQ tile carries the same treatment. Run and commit:
 //
 //   pnpm brand:generate
 //
 // Outputs:
-//   public/brand/pour-iq-lockup.svg  mark + outlined "Pour IQ" wordmark
-//   public/icon.svg                  copy of the on-cellar tile (SVG favicon)
-//   public/favicon.ico               16/32/48 from the tile
+//   public/brand/pour-iq-lockup.svg  the logotype (outlined wordmark + pour)
+//   public/brand/iq-tile.svg         IQ on the cellar tile, true letterforms
+//   public/icon.svg                  copy of iq-tile.svg (SVG favicon)
+//   public/favicon.ico               16 (from iq-tile-16.svg), 32, 48
 //   public/apple-touch-icon.png      180x180 tile, flattened (no alpha)
 //   public/icon-192.png              manifest icon
 //   public/icon-512.png              manifest icon; also the JSON-LD logo
 //
-// The wordmark is outlined from Bricolage Grotesque 800 (the header face)
-// so the lockup renders identically everywhere with no font dependency.
-// The TTF is fetched from Google Fonts on first run and cached in the
+// public/brand/iq-tile-16.svg is the hand-tuned committed source for the
+// 16px ICO slice only. Letterforms are outlined from Bricolage Grotesque
+// 800 (the header face) so everything renders with no font dependency;
+// the TTF is fetched from Google Fonts on first run and cached in the
 // system temp dir. Colours are token values from lib/design-tokens.ts:
 // chalk #F2EFE6, measure #D98E2B, cellar #0F1D18.
 
@@ -29,6 +34,10 @@ import pngToIco from 'png-to-ico'
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const brandDir = join(repoRoot, 'public', 'brand')
 const publicDir = join(repoRoot, 'public')
+
+const CHALK = '#F2EFE6'
+const MEASURE = '#D98E2B'
+const CELLAR = '#0F1D18'
 
 // --- Fetch the wordmark face (static TTF instance, cached) ---------------
 
@@ -48,84 +57,157 @@ async function getBricolageTtf() {
   return file
 }
 
-// --- Lockup: mark + outlined wordmark -------------------------------------
-
-async function generateLockup() {
-  const font = opentype.parse((await readFile(await getBricolageTtf())).buffer)
-
-  // Mark geometry from public/brand/pour-mark.svg (2:3 stroke ratio,
-  // bottoms flush at the left end of the underline).
-  const mark = [
-    '<rect fill="#D98E2B" x="10" y="0" width="4" height="52"/>',
-    '<rect fill="#D98E2B" x="10" y="46" width="44" height="6"/>',
-  ].join('\n  ')
-
-  // Wordmark baseline sits so the mark's underline (y 46-52) reads as the
-  // rule beneath the text, echoing the hero's pour-underline.
-  const fontSize = 46
-  const textX = 72
-  const baseline = 48
-
-  // Outline glyph by glyph with manual advances and kerning: the font's
-  // GSUB ccmp lookups use a subtable format opentype.js cannot shape, and
-  // "Pour IQ" needs no substitutions anyway.
+// Outline text glyph by glyph with manual advances and kerning: the font's
+// GSUB ccmp lookups use a subtable format opentype.js cannot shape, and
+// our strings need no substitutions. Returns path data, the advance width,
+// and the outline's lowest point (the Q descender) in SVG y-down coords.
+function outlineText(font, text, x0, baseline, fontSize) {
   const scale = fontSize / font.unitsPerEm
-  let x = textX
+  let x = x0
   let prev = null
+  let maxY = baseline
   const pathData = []
-  for (const ch of 'Pour IQ') {
+  for (const ch of text) {
     const glyph = font.charToGlyph(ch)
     if (prev) x += font.getKerningValue(prev, glyph) * scale
-    const d = glyph.getPath(x, baseline, fontSize).toPathData(2)
-    if (d) pathData.push(d)
+    const path = glyph.getPath(x, baseline, fontSize)
+    const d = path.toPathData(2)
+    if (d) {
+      pathData.push(d)
+      maxY = Math.max(maxY, path.getBoundingBox().y2)
+    }
     x += glyph.advanceWidth * scale
     prev = glyph
   }
-  const width = Math.ceil(x + 8)
+  return { d: pathData.join(' '), advance: x - x0, maxY }
+}
+
+function capHeightOf(font, fontSize) {
+  const scale = fontSize / font.unitsPerEm
+  const capUnits = font.tables.os2?.sCapHeight || font.charToGlyph('H').getMetrics().yMax
+  return capUnits * scale
+}
+
+// --- The logotype: wordmark with the pour integrated ----------------------
+
+async function generateLogotype(font) {
+  const fontSize = 46
+  const cap = capHeightOf(font, fontSize)
+
+  // The vertical pour stroke starts roughly one cap-height above the
+  // wordmark's top (bounded, not the canvas edge), so the wordmark's cap
+  // line sits at y = cap and the baseline at 2 * cap.
+  const textX = 8
+  const baseline = Math.round(2 * cap)
+  const text = outlineText(font, 'Pour IQ', textX, baseline, fontSize)
+
+  // Underline clear below the Q descender - the tail must not touch it.
+  const ulTop = Math.round(text.maxY + 5)
+  const ulH = 6
+  const vW = 4 // 2:3 stroke ratio, as the hero pour CSS
+  const width = Math.ceil(textX + text.advance + 8)
+  const height = ulTop + ulH + 4
 
   const svg = `<!--
-  Pour IQ lockup: the pour mark beside the wordmark. The wordmark is
-  Bricolage Grotesque 800 converted to outlined paths (no font dependency;
-  renders identically everywhere). Generated by
-  scripts/generate-brand-assets.mjs - do not edit by hand.
-  Colours from lib/design-tokens.ts: chalk #F2EFE6, measure #D98E2B.
+  The Pour IQ logotype: the wordmark with the pour integrated, matching
+  the site hero - measure underline beneath the wordmark, vertical pour
+  stroke descending into its left end (corner join, bottoms flush), 2:3
+  stroke ratio. The underline spans the wordmark's width and sits clear
+  of the Q descender; the vertical drops from roughly cap-height above
+  the wordmark. Wordmark outlined from Bricolage Grotesque 800 (no font
+  dependency). Generated by scripts/generate-brand-assets.mjs - do not
+  edit by hand. Colours from lib/design-tokens.ts: chalk ${CHALK},
+  measure ${MEASURE}.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} 64" role="img" aria-label="Pour IQ">
-  ${mark}
-  <path fill="#F2EFE6" d="${pathData.join(' ')}"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Pour IQ">
+  <rect fill="${MEASURE}" x="${textX}" y="0" width="${vW}" height="${ulTop + ulH}"/>
+  <rect fill="${MEASURE}" x="${textX}" y="${ulTop}" width="${Math.round(text.advance)}" height="${ulH}"/>
+  <path fill="${CHALK}" d="${text.d}"/>
 </svg>
 `
   await writeFile(join(brandDir, 'pour-iq-lockup.svg'), svg)
-  return { width }
+  return { width, height }
 }
 
-// --- Favicons and app icons from the on-cellar tile ------------------------
+// --- The IQ tile: true letterforms, for 32px and above ---------------------
+
+async function generateIqTile(font) {
+  // No vertical pour stroke here: that stroke appears only in assets
+  // carrying the word "Pour" (lockup, OG card) - standalone it reads as
+  // the letter L. The tile is the letters plus the measure underline.
+  const ulH = 6
+  const gap = 3 // clearance under the Q descender - the tail stays visible
+
+  // Fit the letters large: fill the tile width inside comfortable margins,
+  // shrinking only if the stacked block would overflow the height.
+  const probe = outlineText(font, 'IQ', 0, 0, 100)
+  const capRatio = capHeightOf(font, 100) / 100
+  const descRatio = probe.maxY / 100
+  let fontSize = Math.floor((48 / probe.advance) * 100)
+  const maxByHeight = Math.floor((64 - 12 - gap - ulH) / (capRatio + descRatio))
+  fontSize = Math.min(fontSize, maxByHeight)
+
+  const cap = capHeightOf(font, fontSize)
+  const text = outlineText(font, 'IQ', 0, 0, fontSize)
+  const blockH = cap + text.maxY + gap + ulH
+  const dx = (64 - text.advance) / 2
+  const baseline = (64 - blockH) / 2 + cap
+  const t = outlineText(font, 'IQ', dx, baseline, fontSize)
+  const ulTop = (baseline + text.maxY + gap).toFixed(1)
+
+  const svg = `<!--
+  The Pour IQ favicon/app tile: "IQ" in Bricolage Grotesque 800 outlines
+  above a measure underline spanning the letters' width, clear of the Q
+  descender. Deliberately no vertical pour stroke: that stroke appears
+  only in assets carrying the word "Pour" (the lockup and OG card).
+  True letterforms: use at 32px and above; the 16px ICO slice uses the
+  hand-tuned iq-tile-16.svg instead. Generated by
+  scripts/generate-brand-assets.mjs - do not edit by hand.
+  Colours from lib/design-tokens.ts: cellar ${CELLAR}, chalk ${CHALK},
+  measure ${MEASURE}. Corner radius 8 is the radius-md token.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Pour IQ">
+  <rect fill="${CELLAR}" x="0" y="0" width="64" height="64" rx="8"/>
+  <rect fill="${MEASURE}" x="${dx.toFixed(1)}" y="${ulTop}" width="${text.advance.toFixed(1)}" height="${ulH}"/>
+  <path fill="${CHALK}" d="${t.d}"/>
+</svg>
+`
+  await writeFile(join(brandDir, 'iq-tile.svg'), svg)
+}
+
+// --- Favicons and app icons -------------------------------------------------
 
 async function generateIcons() {
-  const tileSvg = join(brandDir, 'pour-mark-on-cellar.svg')
-  const tile = await readFile(tileSvg)
-  const render = (size) => sharp(tile, { density: (72 * size) / 64 }).resize(size, size)
+  const tile = await readFile(join(brandDir, 'iq-tile.svg'))
+  const tile16 = await readFile(join(brandDir, 'iq-tile-16.svg'))
+  const render = (src, size) => sharp(src, { density: (72 * size) / 64 }).resize(size, size)
 
   // SVG favicon is the tile itself.
-  await copyFile(tileSvg, join(publicDir, 'icon.svg'))
+  await copyFile(join(brandDir, 'iq-tile.svg'), join(publicDir, 'icon.svg'))
 
-  const icoSizes = [16, 32, 48]
-  const icoPngs = await Promise.all(icoSizes.map((s) => render(s).png().toBuffer()))
+  // 16px uses the simplified drawing; 32 and 48 the true letterforms.
+  const icoPngs = await Promise.all([
+    render(tile16, 16).png().toBuffer(),
+    render(tile, 32).png().toBuffer(),
+    render(tile, 48).png().toBuffer(),
+  ])
   await writeFile(join(publicDir, 'favicon.ico'), await pngToIco(icoPngs))
 
   // Apple applies its own corner mask and dislikes alpha: flatten the
   // tile's transparent corners onto cellar for a solid square.
-  await render(180)
-    .flatten({ background: '#0F1D18' })
+  await render(tile, 180)
+    .flatten({ background: CELLAR })
     .png()
     .toFile(join(publicDir, 'apple-touch-icon.png'))
 
-  await render(192).png().toFile(join(publicDir, 'icon-192.png'))
-  await render(512).png().toFile(join(publicDir, 'icon-512.png'))
+  await render(tile, 192).png().toFile(join(publicDir, 'icon-192.png'))
+  await render(tile, 512).png().toFile(join(publicDir, 'icon-512.png'))
 }
 
-const { width } = await generateLockup()
+const font = opentype.parse((await readFile(await getBricolageTtf())).buffer)
+const { width, height } = await generateLogotype(font)
+await generateIqTile(font)
 await generateIcons()
 console.log(
-  `Wrote lockup (viewBox 0 0 ${width} 64), icon.svg, favicon.ico, apple-touch-icon.png, icon-192.png, icon-512.png`,
+  `Wrote lockup (viewBox 0 0 ${width} ${height}), iq-tile.svg, icon.svg, favicon.ico, apple-touch-icon.png, icon-192.png, icon-512.png`,
 )
