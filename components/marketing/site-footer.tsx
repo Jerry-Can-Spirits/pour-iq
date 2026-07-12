@@ -6,6 +6,7 @@ const footerColumns = [
     links: [
       { label: 'About', href: '/about' },
       { label: 'Contact', href: '/contact' },
+      { label: 'Sign in', href: 'https://app.pour-iq.co.uk' },
     ],
   },
   {
@@ -36,16 +37,22 @@ export function SiteFooter() {
                   {column.heading}
                 </h2>
                 <ul className="mt-4 flex flex-col gap-3">
-                  {column.links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-small text-chalk transition-colors duration-(--pour-duration-fast) ease-pour hover:text-measure"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
+                  {column.links.map((link) => {
+                    // The app subdomain is a plain anchor: same product
+                    // family, so no new-tab or rel semantics, but not a
+                    // client-side route either.
+                    const LinkComponent = link.href.startsWith('https://') ? 'a' : Link
+                    return (
+                      <li key={link.href}>
+                        <LinkComponent
+                          href={link.href}
+                          className="text-small text-chalk transition-colors duration-(--pour-duration-fast) ease-pour hover:text-measure"
+                        >
+                          {link.label}
+                        </LinkComponent>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             ))}

@@ -84,6 +84,15 @@ export function MobileMenu({ links }: { links: readonly NavLink[] }) {
                 </Link>
               </li>
             ))}
+            <li>
+              <a
+                href="https://app.pour-iq.co.uk"
+                onClick={() => setOpen(false)}
+                className="block rounded-md px-3 py-3 font-medium text-slate decoration-measure decoration-2 underline-offset-4 transition-colors duration-(--pour-duration-fast) ease-pour hover:text-chalk hover:underline"
+              >
+                Sign in
+              </a>
+            </li>
           </ul>
         </nav>
       </div>
