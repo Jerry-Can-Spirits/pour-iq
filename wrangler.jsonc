@@ -8,6 +8,14 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
+  "kv_namespaces": [
+    // Contact-form rate limiting only (ephemeral counters keyed by a
+    // hash of the IP, 10-minute TTL). No user data lives here.
+    {
+      "binding": "RATE_LIMIT",
+      "id": "72d08fac2c76440c948cc447999cd93e",
+    },
+  ],
   "observability": {
     "enabled": true,
     "logs": {
