@@ -70,7 +70,7 @@ async function purgeVenueData(db: D1Database, accountId: string): Promise<void> 
   // Tombstone the account: PII scrubbed, login disabled, row retained so
   // the six-year invoice records keep a valid FK target.
   await db
-    .prepare(`UPDATE trade_accounts SET venue_name = ?1, pin = 'purged-' || id, discount_code = '', active = 0 WHERE id = ?2`)
+    .prepare(`UPDATE trade_accounts SET venue_name = ?1, pin = 'purged-' || id, pin_lookup = NULL, discount_code = '', active = 0 WHERE id = ?2`)
     .bind(TOMBSTONE_NAME, accountId)
     .run()
 }

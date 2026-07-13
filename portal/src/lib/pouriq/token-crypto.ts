@@ -50,6 +50,10 @@ async function getKey(): Promise<CryptoKey> {
   return cachedCryptoKey
 }
 
+export function isEncryptedToken(stored: string): boolean {
+  return stored.startsWith(PREFIX)
+}
+
 export async function encryptToken(plain: string): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const ct = await crypto.subtle.encrypt(

@@ -24,7 +24,7 @@ Audited: 2026-07-13.
 ## Where the marketing site stands (root)
 
 ### Headers and CSP
-Set in `next.config.ts`: HSTS preload, `X-Frame-Options: DENY`, nosniff, Referrer-Policy, and an interim CSP — everything `'self'` except `script-src`/`style-src`, which accept `'unsafe-inline'` because Next.js hydration requires inline scripts (`'unsafe-eval'` dev-only). The interim status and the launch decision (nonce-based CSP via middleware vs a dated acceptance) are documented in the README. No Permissions-Policy or COOP yet. `X-Robots-Tag: noindex, nofollow` is a deliberate pre-launch state with a documented launch-day removal checklist.
+Hardened 2026-07-13. The CSP is nonce-based, built per request in `middleware.ts` (`script-src 'self' 'nonce-…' 'strict-dynamic'`, no `'unsafe-inline'` in `script-src`; the dynamic-rendering cost was measured before shipping — see README). `style-src` retains `'unsafe-inline'` as a documented, accepted exception for the design-token system. All other headers in `next.config.ts`: HSTS preload, `X-Frame-Options: DENY`, nosniff, Referrer-Policy, COOP `same-origin`, CORP `same-origin`, and a Permissions-Policy denying every powerful feature this origin does not use (the portal sets its own — it needs the camera). `X-Robots-Tag: noindex, nofollow` is a deliberate pre-launch state with a documented launch-day removal checklist.
 
 ### Third parties
 None. The marketing site loads zero third-party scripts — no analytics, no consent banner needed yet. If one is ever added, baseline §5 applies from the first script: consent gating plus CSP allowlisting in the same PR.
@@ -40,7 +40,9 @@ No secrets in source. `.env.example` documents `SITE_URL` and `KLAVIYO_API_KEY`;
 `portal/next.config.ts` sets only `X-Frame-Options: DENY`, nosniff, Referrer-Policy, and HSTS. **No CSP, no Permissions-Policy, no COOP** — the weakest headers of any surface in either repo, on the surface handling the most sensitive data. Top follow-up.
 
 ### Auth and licensing
-Sessions follow the baseline: `crypto.randomUUID()` sid in KV, 30-day TTL, `httpOnly`/`secure`/`lax` cookie (`portal/src/lib/trade-portal/session.ts`), re-validated per request. Login (`portal/src/app/api/login/route.ts`) is rate-limited per-IP and per-PIN with an origin allowlist check. On top of sessions, `checkPourIqAccess()` (`portal/src/lib/pouriq/access.ts`) verifies a currently-valid licence window (`no-session | no-licence | ok`). **PINs are stored and compared in plaintext** in `trade_accounts.pin` — the standing violation of baseline §4, shared with the JCS trade portal (same ported code).
+Sessions follow the baseline: `crypto.randomUUID()` sid in KV, 30-day TTL, `httpOnly`/`secure`/`lax` cookie (`portal/src/lib/trade-portal/session.ts`), re-validated per request. Login (`portal/src/app/api/login/route.ts`) is rate-limited per-IP and per-PIN (keyed by a hash, never the raw PIN) with an origin allowlist check against the portal's own origin. On top of sessions, `checkPourIqAccess()` (`portal/src/lib/pouriq/access.ts`) verifies a currently-valid licence window (`no-session | no-licence | ok`).
+
+PINs are stored hashed (`portal/src/lib/trade-portal/credentials.ts`, a byte-identical copy of the JCS reference implementation): HMAC-SHA-256 with the `PIN_PEPPER` Wrangler secret — so a database dump alone cannot be brute-forced, the defence that matters most for a low-entropy PIN — then PBKDF2-SHA-256 (600k iterations, WebCrypto-native, constant-time compare), with a deterministic peppered HMAC in `pin_lookup` for the login SELECT. Format `pin:v1:` is versioned; `pw:v1:` is reserved for the planned owner username/password model. Migration is self-healing: the hourly cron sweep hashes plaintext rows and login upgrades stragglers on first contact; until `PIN_PEPPER` is set the code runs dark on the legacy path.
 
 ### Data protection (the compliance hardening, 2026-07)
 - **Token encryption** — `portal/src/lib/pouriq/token-crypto.ts`: AES-256-GCM via WebCrypto, key from the `TOKEN_ENCRYPTION_KEY` Wrangler secret, format `enc:v1:<iv>:<ct>`, legacy plaintext passthrough on read with re-encrypt-on-write. Covers POS and accounting OAuth tokens.
@@ -63,7 +65,7 @@ Dependabot covers the **root manifest only** — `portal/package.json` is not wa
 Each shared control names the repo whose implementation is canonical, so fixes port rather than get reinvented and the repos cannot drift back apart. When a control ships its first implementation, name it here and in the JCS copy of this file in the same PR.
 
 - **Token encryption at rest** — reference: this repo's portal (`portal/src/lib/pouriq/token-crypto.ts`). JCS ports it.
-- **Credential (PIN) hashing** — no reference yet; unimplemented in both repos. Whichever repo ships first becomes the reference.
+- **Credential (PIN) hashing** — reference: JCS (`src/lib/trade-portal/credentials.ts`, peppered HMAC + PBKDF2 with `pin_lookup` login column). This repo's portal carries a byte-identical copy.
 - **Consent gating of third parties** — reference: JCS (Cookiebot + Consent Mode v2, per-component gating).
 - **Vulnerability disclosure** — reference: JCS (`security.txt` + `/security-policy`).
 - **Data retention, export, and residency** — reference: this repo's portal (`retention.ts`, the export endpoint, WEUR pinning).
@@ -72,10 +74,10 @@ Each shared control names the repo whose implementation is canonical, so fixes p
 
 ## Gaps (in rough priority order — sequenced against the pre-August board)
 
-1. **Hash trade PINs** (shared with JCS — same ported code). In the portal the PIN *is* the login: one plaintext PIN per venue in D1. Hash (Argon2/bcrypt-class — hashing, not encryption, since a PIN only ever needs verifying), constant-time compare, migrate existing rows — **before The Bank's real account is created**, so the pilot never has a plaintext-credential era.
+1. ~~**Hash trade PINs**~~ — shipped 2026-07-13 (see Auth above), sequenced before The Bank's real account exists. Requires the `PIN_PEPPER` secret set on the portal Worker and migration 0070 applied; until then the code runs dark on the legacy plaintext path.
 2. **Portal CSP** — add a CSP (plus Permissions-Policy and COOP) to `portal/next.config.ts`. The portal is an app, not a prerendered site, so the marketing site's nonce-versus-static dilemma does not apply; the policy can be strict. Permissions-Policy allows camera (self only) for barcode scanning.
 3. **CI and Dependabot for the portal** — add `portal/` as a Dependabot directory and a CI job that typechecks and builds the portal; add Dependabot reviewers. Until then, the app code that ships to venues is the code with no automated checks.
-4. **Token-encryption backfill** — the compliance PR encrypts on write only (`decryptToken` passes legacy plaintext through, and no backfill migration exists), so plaintext rows can survive until a connection's next token refresh. Run a one-off backfill, or verify none remain: `SELECT COUNT(*) ... WHERE access_token NOT LIKE 'enc:v1:%'` across both connections tables. The JCS port needs the same backfill from day one.
+4. ~~**Token-encryption backfill**~~ — shipped 2026-07-13: `token-backfill.ts` runs from the hourly cron and encrypts any plaintext token rows the write-path-only hardening left behind (idempotent; no-ops once every row carries `enc:v1:`). Verify after the first run: `SELECT COUNT(*) ... WHERE access_token NOT LIKE 'enc:v1:%'` across both connections tables → 0.
 5. **Vulnerability disclosure** — no `security.txt` and no security policy page on either surface. Add `.well-known/security.txt` and a policy page (the JCS `/security-policy` is the model). Canonical contact address: `security@jerrycanspirits.co.uk`.
 6. **Launch-day CSP decision** (existing README TODO) — nonce-based CSP via middleware or a dated acceptance of `'unsafe-inline'`; plus Permissions-Policy/COOP on the marketing site.
 7. **Housekeeping** — add `.dev.vars` to `.gitignore`; remove or clearly mark the unused `KLAVIYO_API_KEY` in `.env.example`.
