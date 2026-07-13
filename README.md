@@ -42,13 +42,17 @@ Mobile-first throughout: base styles target 390px-class viewports; widen with `s
 
 ## Security headers and CSP status
 
-All responses carry HSTS (browsers only enforce it over HTTPS in production; its presence locally is expected), `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`, and a CSP. Configured in `next.config.ts`.
+The CSP is nonce-based, built per request in `middleware.ts`: `script-src 'self' 'nonce-{value}' 'strict-dynamic'`, with no `'unsafe-inline'` in `script-src`. Next stamps the nonce onto every script it renders; the root layout reads the nonce via `headers()`, which is what opts every page into dynamic rendering. That cost was measured before shipping (2026-07-13, Workers preview edge): median homepage TTFB ~101ms dynamic versus ~103ms static, response size +2.3% — negligible on this stack, so the nonce policy shipped.
 
-**CSP is an interim policy**: everything is locked to `'self'` except `script-src`/`style-src`, which allow `'unsafe-inline'` because Next.js hydration requires inline scripts. A nonce-based CSP via middleware would remove `'unsafe-inline'` but forces every page to render dynamically, which is the wrong trade for a static marketing site pre-launch.
+**`style-src` retains `'unsafe-inline'` — a documented, accepted exception:** the design-token system inlines CSS custom properties on `<html>` (`lib/design-tokens.ts` via the root layout), which needs inline style permission. Do not remove it without reworking token delivery.
 
-**TODO before launch:** revisit CSP — either implement nonce-based CSP via middleware and measure the rendering cost, or document acceptance of the interim policy with a dated decision. Do not ship a change that breaks hydration; verify every page loads with zero console violations after any CSP change.
+Every other security header is set in `next.config.ts`: HSTS (browsers only enforce it over HTTPS in production; its presence locally is expected), `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`, `Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Resource-Policy: same-origin`, and a `Permissions-Policy` denying every powerful feature the marketing site does not use. The Permissions-Policy governs this origin only: the app at app.pour-iq.co.uk sets its own headers (it uses the camera for barcode scanning). `poweredByHeader: false` removes `x-powered-by`.
 
-(`'unsafe-eval'` appears in development only — HMR needs it. Production builds never include it.)
+**HSTS preload is deliberate:** the header carries the `preload` token, and the site may be submitted to hstspreload.org at launch — a planned future step, not an accident. Preload is effectively irreversible across the zone (`includeSubDomains`), so submit only once every subdomain is permanently HTTPS.
+
+(`'unsafe-eval'` appears in development only — HMR needs it. Production policies never include it.)
+
+After any CSP change: verify every page loads with zero console violations at mobile and desktop widths before merging.
 
 ## Pre-launch indexing protection
 

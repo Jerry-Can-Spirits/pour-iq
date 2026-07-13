@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { Bricolage_Grotesque, IBM_Plex_Mono, Instrument_Sans } from 'next/font/google'
 import { tokenCssVariables } from '@/lib/design-tokens'
 import { siteUrl } from '@/lib/metadata'
@@ -27,8 +28,8 @@ const monoFont = IBM_Plex_Mono({
   display: 'swap',
 })
 
-// Facts only: no ratings, reviews, or aggregate data of any kind. The
-// existing CSP (script-src 'self' 'unsafe-inline') permits inline JSON-LD.
+// Facts only: no ratings, reviews, or aggregate data of any kind. Rendered
+// with the per-request CSP nonce (see middleware.ts).
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -72,11 +73,16 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Reading the per-request nonce (set by middleware.ts) is what opts every
+  // page into dynamic rendering — the deliberate cost of the nonce-based
+  // CSP. Next stamps its own scripts from the request CSP header; the
+  // JSON-LD data block is stamped here explicitly.
+  const nonce = (await headers()).get('x-nonce') ?? undefined
   return (
     <html
       lang="en-GB"
@@ -86,6 +92,7 @@ export default function RootLayout({
       <body className="antialiased">
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
         {children}
