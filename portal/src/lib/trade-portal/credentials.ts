@@ -26,7 +26,14 @@
 // pour-iq portal carries a byte-identical copy.
 
 const PIN_PREFIX = 'pin:v1'
-export const PBKDF2_ITERATIONS = 600_000
+// Workers WebCrypto rejects PBKDF2 above 100k iterations
+// ("NotSupportedError: iteration counts above 100000 are not
+// supported" — found live; Node has no such cap, so tests alone never
+// catch it). 100k is the runtime maximum. The pepper, not the stretch,
+// carries the database-dump defence for a low-entropy PIN, and the
+// iteration count is embedded per-row, so raising this later only
+// affects newly hashed values.
+export const PBKDF2_ITERATIONS = 100_000
 
 const encoder = new TextEncoder()
 
@@ -91,9 +98,19 @@ async function verifySecret(
   if (parts.length !== 5 || `${parts[0]}:${parts[1]}` !== prefix) return false
   const iterations = Number(parts[2])
   if (!Number.isInteger(iterations) || iterations < 1) return false
-  const salt = fromBase64(parts[3])
-  const expected = fromBase64(parts[4])
-  const actual = await stretch(pepper, secret, salt, iterations)
+  let salt: Uint8Array
+  let expected: Uint8Array
+  let actual: Uint8Array
+  try {
+    salt = fromBase64(parts[3])
+    expected = fromBase64(parts[4])
+    actual = await stretch(pepper, secret, salt, iterations)
+  } catch {
+    // Fail closed: malformed base64 or parameters the runtime rejects
+    // (e.g. an iteration count above the Workers cap) mean "no match",
+    // never a thrown 500 on the login path.
+    return false
+  }
   if (actual.length !== expected.length) return false
   let diff = 0
   for (let i = 0; i < actual.length; i++) diff |= actual[i] ^ expected[i]
