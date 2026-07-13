@@ -28,7 +28,9 @@ export interface DemoFormValues {
 
 export interface DemoFormState {
   status: 'idle' | 'success' | 'error' | 'invalid'
-  message?: string
+  // Which failure state to render; the copy lives in contactCopy and is
+  // mapped client-side, so failure strings never travel over the wire.
+  errorKind?: 'failed' | 'unavailable' | 'rate-limited'
   fieldErrors?: Partial<Record<keyof DemoFormValues, string>>
   values?: DemoFormValues
 }
@@ -122,7 +124,7 @@ export async function submitDemoRequest(
     .split(',')[0]
     .trim()
   if (bindings.RATE_LIMIT && (await isRateLimited(bindings.RATE_LIMIT, ip))) {
-    return { status: 'error', message: contactCopy.errors.rateLimited, values }
+    return { status: 'error', errorKind: 'rate-limited', values }
   }
 
   const result = await forwardDemoRequest(bindings, {
@@ -135,10 +137,10 @@ export async function submitDemoRequest(
   })
 
   if (result === 'unavailable') {
-    return { status: 'error', message: contactCopy.errors.unavailable, values }
+    return { status: 'error', errorKind: 'unavailable', values }
   }
   if (result === 'error') {
-    return { status: 'error', message: contactCopy.errors.submitFailed, values }
+    return { status: 'error', errorKind: 'failed', values }
   }
   return { status: 'success' }
 }

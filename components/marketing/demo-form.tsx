@@ -11,7 +11,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { submitDemoRequest, type DemoFormState } from '@/app/(marketing)/contact/actions'
-import { contactCopy } from '@/lib/contact-copy'
+import { contactCopy, type EmailSplitCopy } from '@/lib/contact-copy'
 
 const initialState: DemoFormState = { status: 'idle' }
 
@@ -26,6 +26,23 @@ function FieldError({ id, message }: { id: string; message?: string }) {
     <p id={id} className={errorClasses}>
       {message}
     </p>
+  )
+}
+
+// Renders a copy string split around the email address, so the escape
+// hatch is a live mailto link without altering the supplied text.
+function EmailLine({ copy }: { copy: EmailSplitCopy }) {
+  return (
+    <>
+      {copy.before}
+      <a
+        href={`mailto:${copy.address}`}
+        className="text-chalk underline decoration-measure decoration-2 underline-offset-4"
+      >
+        {copy.address}
+      </a>
+      {copy.after}
+    </>
   )
 }
 
@@ -179,9 +196,22 @@ export function DemoForm() {
         <FieldError id="contact-consent-error" message={errors.consent} />
       </div>
 
-      {state.status === 'error' && state.message && (
+      {state.status === 'error' && state.errorKind === 'failed' && (
+        <div role="alert" className="mt-6">
+          <p className="font-medium text-leak">{contactCopy.errors.failedHeading}</p>
+          <p className="mt-2 text-small text-slate">
+            <EmailLine copy={contactCopy.errors.failedBody} />
+          </p>
+        </div>
+      )}
+      {state.status === 'error' && state.errorKind === 'unavailable' && (
         <p role="alert" className="mt-6 text-small text-leak">
-          {state.message}
+          <EmailLine copy={contactCopy.errors.unavailable} />
+        </p>
+      )}
+      {state.status === 'error' && state.errorKind === 'rate-limited' && (
+        <p role="alert" className="mt-6 text-small text-leak">
+          <EmailLine copy={contactCopy.errors.rateLimited} />
         </p>
       )}
 

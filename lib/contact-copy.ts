@@ -1,18 +1,20 @@
-// Every customer-facing string on the contact page, in one place so the
-// supplied copy drops in byte-exact.
-//
-// ── BLOCKED ON COPY ─────────────────────────────────────────────────
-// Strings marked [AWAITING COPY] are placeholders. Per CLAUDE.md, copy
-// is decided in conversation and implemented byte-exact — this page
-// must not ship until every marked string is replaced with the
-// supplied block. "CONTACT" and "Book a demo." were supplied in the
-// task; the rest were not.
-// ────────────────────────────────────────────────────────────────────
+// Every customer-facing string on the contact page, in one place.
+// Copy supplied by Dan 2026-07-13 and implemented byte-exact per
+// CLAUDE.md — do not edit wording here without a supplied change.
+// Messages that carry the email escape hatch are split around the
+// address so it renders as a mailto link without altering the text.
+
+export interface EmailSplitCopy {
+  before: string
+  address: string
+  after: string
+}
 
 export const contactCopy = {
   heroLabel: 'CONTACT',
   heroTitle: 'Book a demo.',
-  heroIntro: '[AWAITING COPY] Intro paragraph as supplied.',
+  heroIntro:
+    'Twenty minutes, a working venue inside Pour IQ, and your questions answered by the founder. Fill this in and Dan will come back to you within one working day.',
 
   fields: {
     name: 'Name',
@@ -20,39 +22,51 @@ export const contactCopy = {
     email: 'Email',
     phone: 'Phone (optional)',
     message: 'Message (optional)',
-    // The consent sentence; {privacy} marks where the "Privacy policy"
-    // link text sits. Link target: /privacy-policy.
-    consentBefore: '[AWAITING COPY] Consent label text before the ',
+    // "I'm happy for Pour IQ to hold these details to arrange the
+    // demo. Privacy policy." — the words "Privacy policy" carry the
+    // link to /privacy-policy.
+    consentBefore: "I'm happy for Pour IQ to hold these details to arrange the demo. ",
     consentLink: 'Privacy policy',
-    consentAfter: ' link, as supplied.',
+    consentAfter: '.',
   },
 
-  submit: '[AWAITING COPY] Submit button label.',
-  submitting: '[AWAITING COPY] Submitting state label.',
+  submit: 'Send it',
+  submitting: 'Sending',
 
   emailAlternative: {
-    before: '[AWAITING COPY] Email-alternative line before the address, as supplied. ',
+    before: 'Prefer email? ',
     address: 'hello@pour-iq.co.uk',
-    after: '',
-  },
+    after: ' reaches the same person.',
+  } satisfies EmailSplitCopy,
 
   success: {
-    heading: '[AWAITING COPY] Success heading, as supplied.',
-    body: '[AWAITING COPY] Success body, as supplied.',
+    heading: 'Done. You will hear from Dan within one working day.',
+    body: 'Usually sooner. If it is urgent, say so in the message and it gets read first.',
   },
 
   errors: {
-    // Per-field validation messages, announced inline via
-    // aria-describedby.
-    nameRequired: '[AWAITING COPY] Name required.',
-    venueRequired: '[AWAITING COPY] Venue name required.',
-    emailRequired: '[AWAITING COPY] Email required.',
-    emailInvalid: '[AWAITING COPY] Email invalid.',
-    consentRequired: '[AWAITING COPY] Consent required.',
-    tooLong: '[AWAITING COPY] Field too long.',
-    // Whole-form failure states.
-    submitFailed: '[AWAITING COPY] Error state copy, as supplied.',
-    unavailable: '[AWAITING COPY] Temporarily-unavailable (503) copy.',
-    rateLimited: '[AWAITING COPY] Generic slow-down message.',
+    nameRequired: 'Your name is needed so Dan knows who to reply to.',
+    venueRequired: 'The venue name helps Dan prepare before the call.',
+    emailRequired: 'An email address is needed to arrange the demo.',
+    emailInvalid: 'That email address does not look right. Check it and try again.',
+    consentRequired: 'Tick the consent box so we can hold your details to arrange the demo.',
+    tooLong: 'That is longer than the form can take. Trim it down and try again.',
+
+    failedHeading: 'That did not send. Nothing was lost, try again in a moment.',
+    failedBody: {
+      before: 'If it keeps failing, email ',
+      address: 'hello@pour-iq.co.uk',
+      after: ' directly.',
+    } satisfies EmailSplitCopy,
+    unavailable: {
+      before: 'The form is taking a break. Email ',
+      address: 'hello@pour-iq.co.uk',
+      after: ' and Dan will get straight back to you.',
+    } satisfies EmailSplitCopy,
+    rateLimited: {
+      before: 'That is a few attempts in quick succession. Give it ten minutes, or email ',
+      address: 'hello@pour-iq.co.uk',
+      after: '.',
+    } satisfies EmailSplitCopy,
   },
 } as const
