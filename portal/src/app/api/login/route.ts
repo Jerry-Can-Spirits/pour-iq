@@ -16,6 +16,13 @@ import {
   TRADE_PIN_MAX_ATTEMPTS,
 } from '@/lib/kv'
 import { createTradeSession, setTradeSessionCookie } from '@/lib/trade-portal/session'
+import {
+  hashPin,
+  isHashedPin,
+  pinLookupKey,
+  pinRateKey,
+  verifyPin,
+} from '@/lib/trade-portal/credentials'
 
 export const runtime = 'nodejs'
 
@@ -50,7 +57,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid PIN' }, { status: 400 })
   }
 
-  if ((await getTradeFailedAttemptsForPin(kv, pin)) >= TRADE_PIN_MAX_ATTEMPTS) {
+  // Rate-limit keys use a hash of the PIN so raw PINs never appear in
+  // KV key names.
+  const pinKey = await pinRateKey(pin)
+  if ((await getTradeFailedAttemptsForPin(kv, pinKey)) >= TRADE_PIN_MAX_ATTEMPTS) {
     return NextResponse.json({ error: 'Too many failed attempts. Please try again later.' }, { status: 429 })
   }
 
@@ -59,17 +69,45 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Too many failed attempts. Please try again later.' }, { status: 429 })
   }
 
-  const account = await db
-    .prepare(`SELECT id FROM trade_accounts WHERE pin = ?1 AND active = 1`)
-    .bind(pin)
-    .first<{ id: string }>()
+  const pepper = (env as { PIN_PEPPER?: string }).PIN_PEPPER
+
+  let account: { id: string } | null = null
+  if (pepper) {
+    // Hashed path: SELECT by the deterministic lookup key, then verify
+    // the stored PBKDF2 hash.
+    const row = await db
+      .prepare(`SELECT id, pin FROM trade_accounts WHERE pin_lookup = ?1 AND active = 1`)
+      .bind(await pinLookupKey(pepper, pin))
+      .first<{ id: string; pin: string }>()
+    if (row && isHashedPin(row.pin) && (await verifyPin(pepper, pin, row.pin))) {
+      account = { id: row.id }
+    }
+  }
   if (!account) {
-    await incrementTradeFailedAttemptsForPin(kv, pin)
+    // Legacy plaintext row the sweep has not reached yet (or the pepper
+    // is not set): equality is the verification, then upgrade in place
+    // so this credential's plaintext era ends now.
+    const row = await db
+      .prepare(`SELECT id FROM trade_accounts WHERE pin = ?1 AND active = 1`)
+      .bind(pin)
+      .first<{ id: string }>()
+    if (row) {
+      account = { id: row.id }
+      if (pepper) {
+        await db
+          .prepare(`UPDATE trade_accounts SET pin = ?1, pin_lookup = ?2 WHERE id = ?3`)
+          .bind(await hashPin(pepper, pin), await pinLookupKey(pepper, pin), row.id)
+          .run()
+      }
+    }
+  }
+  if (!account) {
+    await incrementTradeFailedAttemptsForPin(kv, pinKey)
     return NextResponse.json({ error: 'Invalid PIN' }, { status: 401 })
   }
 
   await clearTradeFailedAttempts(kv, ip)
-  await clearTradeFailedAttemptsForPin(kv, pin)
+  await clearTradeFailedAttemptsForPin(kv, pinKey)
   const sid = await createTradeSession(kv, account.id)
   await setTradeSessionCookie(sid)
   return NextResponse.json({ success: true })

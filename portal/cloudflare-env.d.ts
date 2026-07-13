@@ -21,6 +21,11 @@ interface CloudflareEnv {
   // Secrets — at-rest encryption for stored OAuth tokens (32 bytes, base64)
   TOKEN_ENCRYPTION_KEY: string;
 
+  // Secrets — PIN hashing pepper (32 bytes, base64). Optional so the
+  // credential code can ship dark: until the secret is set, login uses
+  // the legacy plaintext path and the hash sweep no-ops.
+  PIN_PEPPER?: string;
+
   // Secrets — POS integrations
   SQUARE_APP_ID: string;
   SQUARE_APP_SECRET: string;

@@ -6,7 +6,7 @@
  *   ageverified:{fp}        — Server-side age verification cache (365d TTL)
  *   visitor:{fp}            — First-time vs returning visitor (30d TTL)
  *   trade:failed:{ip}       — Trade PIN failed attempts per IP (15min TTL)
- *   trade:pin-failed:{pin}  — Trade PIN account-level failed attempts (1h TTL)
+ *   trade:pin-failed:{pinKey} — Trade PIN account-level failed attempts, keyed by pinRateKey hash (1h TTL)
  *   trade:session:{sid}     — Trade portal session tokens (30d TTL)
  *   ratelimit:{prefix}:{ip} — Generic rate limit counters (configurable TTL)
  */
@@ -146,21 +146,23 @@ export async function clearTradeFailedAttempts(
 export const TRADE_PIN_MAX_ATTEMPTS = 10;
 const TRADE_PIN_LOCKOUT_TTL = 60 * 60; // 1 hour
 
+// Callers pass pinRateKey(pin) — a hash — so raw PINs never appear in
+// KV key names.
 export async function getTradeFailedAttemptsForPin(
   kv: KVNamespace,
-  pin: string,
+  pinKey: string,
 ): Promise<number> {
-  const val = await kv.get(`trade:pin-failed:${pin}`);
+  const val = await kv.get(`trade:pin-failed:${pinKey}`);
   return val ? parseInt(val, 10) : 0;
 }
 
 export async function incrementTradeFailedAttemptsForPin(
   kv: KVNamespace,
-  pin: string,
+  pinKey: string,
 ): Promise<number> {
-  const current = await getTradeFailedAttemptsForPin(kv, pin);
+  const current = await getTradeFailedAttemptsForPin(kv, pinKey);
   const next = current + 1;
-  await kv.put(`trade:pin-failed:${pin}`, String(next), {
+  await kv.put(`trade:pin-failed:${pinKey}`, String(next), {
     expirationTtl: TRADE_PIN_LOCKOUT_TTL,
   });
   return next;
@@ -168,14 +170,17 @@ export async function incrementTradeFailedAttemptsForPin(
 
 export async function clearTradeFailedAttemptsForPin(
   kv: KVNamespace,
-  pin: string,
+  pinKey: string,
 ): Promise<void> {
-  await kv.delete(`trade:pin-failed:${pin}`);
+  await kv.delete(`trade:pin-failed:${pinKey}`);
 }
 
 // ── Origin Validation ───────────────────────────────────────────────
 
-const ALLOWED_ORIGIN = 'https://jerrycanspirits.co.uk';
+// The portal's own origin — this was still the JCS domain after the
+// Phase 2 migration, which made every browser POST (login included)
+// fail the origin check with a 403.
+const ALLOWED_ORIGIN = 'https://app.pour-iq.co.uk';
 
 /**
  * Returns false if the request has an Origin header that doesn't match our
