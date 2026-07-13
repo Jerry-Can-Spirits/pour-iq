@@ -92,9 +92,19 @@ pnpm brand:generate                        # lockup, tile, favicons, app icons
 pwsh scripts/generate-og-image.ps1         # og.png (Windows; System.Drawing)
 ```
 
+## Contact form (demo booking)
+
+`/contact` carries the site's only form and its only third-party integration. Submissions run through a server action on the Workers runtime (`app/(marketing)/contact/actions.ts`): every field is validated server-side independent of client checks, nothing is stored or forwarded without the consent box checked, and the submission is forwarded server-side to Klaviyo (`lib/klaviyo.ts`) — profile create-or-update plus the demo-requests list, consent recorded with a timestamp. `KLAVIYO_API_KEY` and `KLAVIYO_DEMO_LIST_ID` are Wrangler secrets in production; with either missing the form reports temporarily unavailable (the portal's graceful 503 pattern) rather than pretending.
+
+The form works with JavaScript disabled (full-page re-render with the same states); with JS, one client island (`components/marketing/demo-form.tsx`) renders the same states inline. It is the marketing site's single justified client component.
+
+Abuse resistance is a visually hidden honeypot (silent discard on fill) plus a KV-backed rate limit — 5 submissions per 10 minutes per IP, counters keyed by a hash of the IP with a 10-minute TTL, so no raw addresses are stored (the `RATE_LIMIT` namespace in `wrangler.jsonc`). The Workers rate-limiting binding was not used because its window options (10 or 60 seconds) cannot express 5-per-10-minutes. **Deliberately no Turnstile or any third-party challenge**: it would require loosening the CSP for an external script, and that trade-off is reported and decided, not made silently. If spam volume ever warrants it, Turnstile is the escalation path — a decision with a CSP change attached, not a default.
+
+There is no analytics and no tracking anywhere on the form; the Klaviyo forward is the only data that leaves, which keeps the privacy policy's "no tracking" claim true.
+
 ## Environment
 
-Copy `.env.example` to `.env.local`. `SITE_URL` feeds `metadataBase` (canonical URLs, OG URLs); `KLAVIYO_API_KEY` is reserved for the newsletter/contact integration. No secrets are committed anywhere in this repo.
+Copy `.env.example` to `.env.local`. `SITE_URL` feeds `metadataBase` (canonical URLs, OG URLs); `KLAVIYO_API_KEY` and `KLAVIYO_DEMO_LIST_ID` feed the contact-form forward (see above). No secrets are committed anywhere in this repo.
 
 `SITE_URL` is optional: production builds (`pnpm build` / `pnpm deploy`) default to `https://pour-iq.co.uk` and dev defaults to `http://localhost:3000` (`lib/metadata.ts`). Set it only to override — e.g. a staging preview under its own domain. Note Next's env precedence: a `SITE_URL` in `.env.local` overrides everything, including production builds, so keep it out of `.env.local` unless that's what you mean.
 

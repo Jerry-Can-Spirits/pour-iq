@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# The placeholder template is the documented exception — it holds key
+# names only, never values.
+!.env.example
 
 # vercel
 .vercel
