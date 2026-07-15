@@ -41,7 +41,10 @@
   "pnpm": {
     "overrides": {
       "postcss": "^8.5.18",
-      "esbuild": "0.28.1"
+      "esbuild": "0.28.1",
+      "@vitest/runner": "3.2.7",
+      "@vitest/snapshot": "3.2.7",
+      "@vitest/pretty-format": "3.2.7"
     }
   }
 }

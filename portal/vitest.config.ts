@@ -17,7 +17,9 @@ export default defineWorkersConfig({
         miniflare: {
           // No nodejs_compat: the credential module is pure WebCrypto,
           // and the flag's vm shim clashes with this pool version.
-          compatibilityDate: '2026-07-01',
+          // Date matches the newest workerd this pool bundles — asking
+          // for later just triggers a fallback warning in CI.
+          compatibilityDate: '2025-09-06',
         },
       },
     },
