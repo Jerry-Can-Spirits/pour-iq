@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { checkPourIqAccess } from '@/lib/pouriq/access'
+import { checkPourIqAccess, requireDemoSession } from '@/lib/pouriq/access'
+import { readDemoOverlay } from '@/lib/pouriq/demo/overlay'
+import { DemoScanRipple } from '@/components/pouriq/demo/DemoScanRipple'
 import { LicenceGate } from '@/components/pouriq/LicenceGate'
 import { loadDashboard, loadSetupProgress } from '@/lib/pouriq/dashboard'
 import { SECONDARY_BUTTON_SM } from '@/lib/pouriq/button-styles'
@@ -25,10 +27,21 @@ export default async function TodayDashboard() {
     loadSetupProgress(db, access.tradeAccountId),
   ])
 
+  // Demo: the scan-ripple headline moment, above everything else. Its
+  // applied state is read from the session overlay so it survives a reload.
+  let demoRippleApplied = false
+  if (access.role === 'demo') {
+    const kv = env.SITE_OPS as KVNamespace
+    const sid = await requireDemoSession()
+    if (sid) demoRippleApplied = (await readDemoOverlay(kv, sid)).rippleApplied === true
+  }
+
   return (
     <main className="min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24">
         <h1 className={`${PAGE_TITLE} mb-8`}>Today</h1>
+
+        {access.role === 'demo' && <DemoScanRipple initiallyApplied={demoRippleApplied} />}
 
         {!setup.allComplete && (
           <section className="mb-8 rounded-xl border border-slate-200 bg-white p-5">

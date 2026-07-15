@@ -4,16 +4,35 @@ import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { NAV_GROUPS, isNavActive } from '@/lib/pouriq/nav'
+import { isBlockedForDemo } from '@/lib/pouriq/demo/config'
 import { AddImportMenu } from './AddImportMenu'
 import { PourIqWordmark } from './PourIqWordmark'
+import { DemoBanner } from './demo/DemoBanner'
 
-export function PourIqShell({ venueName, children }: { venueName: string; children: ReactNode }) {
+export function PourIqShell({
+  venueName,
+  demo = false,
+  children,
+}: {
+  venueName: string
+  demo?: boolean
+  children: ReactNode
+}) {
   const pathname = usePathname()
   const [navOpen, setNavOpen] = useState(false)
 
+  // In the demo, hide nav items that would 403 for the demo role (the
+  // /settings surfaces), so visitors never hit a dead end. Groups left
+  // empty by the filter are dropped.
+  const navGroups = demo
+    ? NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => !isBlockedForDemo(i.href, 'GET')) })).filter(
+        (g) => g.items.length > 0,
+      )
+    : NAV_GROUPS
+
   const nav = (
     <nav aria-label="Pour IQ" className="px-3 py-4 space-y-5">
-      {NAV_GROUPS.map((group) => (
+      {navGroups.map((group) => (
         <div key={group.label}>
           <div className="px-2 mb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-400">{group.label}</div>
           <ul className="space-y-0.5">
@@ -53,6 +72,7 @@ export function PourIqShell({ venueName, children }: { venueName: string; childr
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {demo && <DemoBanner />}
       <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -70,7 +90,8 @@ export function PourIqShell({ venueName, children }: { venueName: string; childr
             <span className="text-slate-400 text-sm truncate border-l border-slate-200 pl-3">{venueName}</span>
           </Link>
         </div>
-        <AddImportMenu />
+        {/* Add/Import triggers writes and AI — hidden in the read-mostly demo. */}
+        {!demo && <AddImportMenu />}
       </header>
 
       <div className="flex">
