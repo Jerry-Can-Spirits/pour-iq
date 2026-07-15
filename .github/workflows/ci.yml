@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 # Supersede in-flight runs on the same ref — saves runner minutes on
 # rapid pushes.
 concurrency:
@@ -11,7 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  CI:
+  root:
+    name: Marketing site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -24,3 +28,40 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build
+
+  portal:
+    name: Portal
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: portal
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: portal/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      # Credential tests run on workerd via vitest-pool-workers, so
+      # WebCrypto behaviour is exercised on the Workers runtime in CI.
+      - run: pnpm test
+      - run: pnpm build
+
+  # Summary gate: branch protection requires a check named "CI", and it
+  # must reflect both jobs. if: always() matters — without it a failed
+  # need leaves this job skipped, and a skipped required check can slip
+  # through protection.
+  CI:
+    name: CI
+    needs: [root, portal]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All jobs passed
+        run: |
+          test "${{ needs.root.result }}" = "success"
+          test "${{ needs.portal.result }}" = "success"

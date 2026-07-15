@@ -230,9 +230,9 @@ export function VarianceEditor() {
 
               {row.unmatched_in_window > 0 && (
                 <p className="text-sm text-amber-600 mb-3">
-                  <a href="/unmatched" className="underline hover:text-amber-700">
+                  <Link href="/unmatched" className="underline hover:text-amber-700">
                     Usage understated, {row.unmatched_in_window} unmapped sales this period
-                  </a>
+                  </Link>
                 </p>
               )}
 

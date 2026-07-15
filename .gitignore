@@ -55,3 +55,5 @@ portal/.next
 portal/.open-next
 portal/next-env.d.ts
 portal/tsconfig.tsbuildinfo
+# Wrangler local secrets
+.dev.vars

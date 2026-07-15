@@ -177,20 +177,23 @@ export async function clearTradeFailedAttemptsForPin(
 
 // ── Origin Validation ───────────────────────────────────────────────
 
-// The portal's own origin — this was still the JCS domain after the
-// Phase 2 migration, which made every browser POST (login included)
-// fail the origin check with a 403.
-const ALLOWED_ORIGIN = 'https://app.pour-iq.co.uk';
-
 /**
- * Returns false if the request has an Origin header that doesn't match our
- * domain — blocking cross-origin form POSTs while allowing server-to-server
- * calls (which don't send Origin).
+ * Returns false if the request has an Origin header for a different host
+ * than the one being served — blocking cross-origin form POSTs while
+ * allowing server-to-server calls (which don't send Origin). Compared
+ * against the request's own Host rather than a hardcoded domain: the
+ * hardcoded constant silently 403ed every portal POST for two days
+ * after the Phase 2 domain move, and it also blocked local Workers
+ * previews. Same-host comparison is the actual CSRF intent.
  */
 export function isAllowedOrigin(request: Request): boolean {
   const origin = request.headers.get('origin');
   if (!origin) return true;
-  return origin === ALLOWED_ORIGIN;
+  try {
+    return new URL(origin).host === request.headers.get('host');
+  } catch {
+    return false;
+  }
 }
 
 // ── Generic Rate Limiting ────────────────────────────────────────────
