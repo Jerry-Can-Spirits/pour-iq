@@ -6,9 +6,10 @@ import { useState } from 'react'
 // live, using the product's exact net-sale formula (round(price / 1.20)
 // when prices include VAT). Persists to the session overlay only.
 //
-// NOTE (copy): the framing labels here were not part of the supplied
-// copy set. They are minimal functional labels mirroring the menu
-// table's own vocabulary (Price, Pour cost, GP), pending approved copy.
+// Copy (approved 2026-07-16): field labels Drink / Price / GP mirror the
+// menu table's own vocabulary; the button reads "Update price" — not
+// bare "Update" — so it names the local recalculation and never reads as
+// save/commit, which the demo never does.
 const VAT_DIVISOR = 1.2
 
 export interface DemoDrink {
@@ -103,7 +104,7 @@ export function DemoPriceToggle({ drinks, includesVat }: { drinks: DemoDrink[]; 
           disabled={!validPrice || saving}
           className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
         >
-          {saving ? 'Saving…' : 'Update'}
+          {saving ? 'Saving…' : 'Update price'}
         </button>
       </div>
     </section>
