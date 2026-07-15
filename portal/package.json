@@ -21,7 +21,7 @@
     "read-excel-file": "^9.2.0"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.71",
+    "@cloudflare/vitest-pool-workers": "^0.18.5",
     "@cloudflare/workers-types": "^4.20260702.1",
     "@eslint/eslintrc": "^3",
     "@opennextjs/cloudflare": "^1.20.1",
@@ -36,7 +36,7 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.7",
-    "wrangler": "^4.110.0"
+    "wrangler": "^4.111.0"
   },
   "pnpm": {
     "overrides": {
