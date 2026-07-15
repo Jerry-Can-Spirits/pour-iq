@@ -19,6 +19,11 @@ export default async function PourIqLayout({ children }: { children: ReactNode }
     .bind(access.tradeAccountId)
     .first<{ venue_name: string | null }>()
   const venueName = row?.venue_name?.trim() ?? ''
+  const demo = access.kind === 'ok' && access.role === 'demo'
 
-  return <PourIqShell venueName={venueName}>{children}</PourIqShell>
+  return (
+    <PourIqShell venueName={venueName} demo={demo}>
+      {children}
+    </PourIqShell>
+  )
 }
