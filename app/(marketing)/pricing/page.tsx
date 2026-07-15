@@ -199,8 +199,14 @@ export default function PricingPage() {
             Book a demo, see the working venue, and decide. If it is not for you, you have lost
             twenty minutes.
           </p>
-          <div className="mt-10">
+          <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
             <CtaLink href="/contact">Book a demo</CtaLink>
+            <a
+              href="https://app.pour-iq.co.uk/demo"
+              className="font-medium text-chalk decoration-measure decoration-2 underline-offset-4 hover:underline"
+            >
+              Explore a demo venue
+            </a>
           </div>
         </div>
       </section>

@@ -1,7 +1,9 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { checkPourIqAccess } from '@/lib/pouriq/access'
+import { checkPourIqAccess, requireDemoSession } from '@/lib/pouriq/access'
+import { readDemoOverlay } from '@/lib/pouriq/demo/overlay'
+import { DemoPriceToggle } from '@/components/pouriq/demo/DemoPriceToggle'
 import { getMenu, listCocktailsForMenu } from '@/lib/pouriq/menus'
 import { calculateMenuMetrics } from '@/lib/pouriq/calculations'
 import { LicenceGate } from '@/components/pouriq/LicenceGate'
@@ -69,7 +71,17 @@ export default async function MenuDetailPage({ params }: Props) {
   const menu = await getMenu(db, menuId, access.tradeAccountId)
   if (!menu) notFound()
 
-  const cocktails = await listCocktailsForMenu(db, menuId)
+  const baseCocktails = await listCocktailsForMenu(db, menuId)
+  // Demo: overlay the session's price toggles over base data at read time
+  // (never D1), so a persisted override shows in the table on reload.
+  let priceOverrides: Record<string, number> = {}
+  if (access.role === 'demo') {
+    const sid = await requireDemoSession()
+    if (sid) priceOverrides = (await readDemoOverlay(env.SITE_OPS as KVNamespace, sid)).priceOverrides ?? {}
+  }
+  const cocktails = Object.keys(priceOverrides).length
+    ? baseCocktails.map((c) => (priceOverrides[c.id] != null ? { ...c, sale_price_p: priceOverrides[c.id] } : c))
+    : baseCocktails
   const period = currentPeriod(menu.volume_cadence)
   const volumes = await listVolumesForPeriod(db, menuId, period.start, period.end)
   const metrics = calculateMenuMetrics(cocktails, menu.prices_include_vat === 1, volumes)
@@ -113,9 +125,22 @@ export default async function MenuDetailPage({ params }: Props) {
 
   const reportDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
+  const demoDrinks =
+    access.role === 'demo'
+      ? metrics.cocktail_metrics.map((m) => ({
+          cocktail_id: m.cocktail_id,
+          name: m.name,
+          sale_price_p: m.sale_price_p,
+          pour_cost_p: m.pour_cost_p,
+        }))
+      : []
+
   return (
     <main className="min-h-screen print-region">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24">
+        {access.role === 'demo' && demoDrinks.length > 0 && (
+          <DemoPriceToggle drinks={demoDrinks} includesVat={menu.prices_include_vat === 1} />
+        )}
         <div className="flex items-baseline gap-4 no-print">
           <Link href="/menus" className="text-sm text-slate-500 hover:text-slate-700">← All menus</Link>
           <Link href="/library" className="text-sm text-slate-500 hover:text-slate-700">Library</Link>

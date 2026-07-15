@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { DEMO_SESSION_COOKIE, isBlockedForDemo } from '@/lib/pouriq/demo/config'
 
 // Nonce-based CSP, ported from the marketing site's reference
 // implementation (the root app's middleware.ts) with app-appropriate
@@ -36,6 +37,20 @@ export function middleware(request: NextRequest) {
     "frame-ancestors 'none'",
     'upgrade-insecure-requests',
   ].join('; ')
+
+  // Demo default-deny: a demo session (identified by its own cookie —
+  // no KV lookup needed to *block*) may only read the demo venue and
+  // POST to the two overlay endpoints. Every other mutation, and every
+  // dangerous surface, is refused here before the route runs. The two
+  // allowed endpoints re-validate the demo session in KV themselves.
+  if (request.cookies.has(DEMO_SESSION_COOKIE)) {
+    if (isBlockedForDemo(request.nextUrl.pathname, request.method)) {
+      return new NextResponse('Not available in the demo.', {
+        status: 403,
+        headers: { 'Content-Security-Policy': csp, 'Content-Type': 'text/plain' },
+      })
+    }
+  }
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
