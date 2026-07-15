@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 # Supersede in-flight runs on the same ref — saves runner minutes on
 # rapid pushes.
 concurrency:
