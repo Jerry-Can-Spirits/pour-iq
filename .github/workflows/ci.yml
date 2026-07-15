@@ -50,3 +50,18 @@ jobs:
       # WebCrypto behaviour is exercised on the Workers runtime in CI.
       - run: pnpm test
       - run: pnpm build
+
+  # Summary gate: branch protection requires a check named "CI", and it
+  # must reflect both jobs. if: always() matters — without it a failed
+  # need leaves this job skipped, and a skipped required check can slip
+  # through protection.
+  CI:
+    name: CI
+    needs: [root, portal]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All jobs passed
+        run: |
+          test "${{ needs.root.result }}" = "success"
+          test "${{ needs.portal.result }}" = "success"
