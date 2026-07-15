@@ -8,6 +8,7 @@ import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 initOpenNextCloudflareForDev()
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   async headers() {
     return [
       {
@@ -19,6 +20,16 @@ const nextConfig: NextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains; preload',
+          },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+          {
+            // The marketing site's deny list with one exception: the
+            // camera, self only, which the barcode scanner needs. The
+            // CSP lives in middleware.ts (nonce-based, per request).
+            key: 'Permissions-Policy',
+            value:
+              'camera=(self), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), browsing-topics=()',
           },
         ],
       },

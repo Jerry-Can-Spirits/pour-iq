@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "test": "vitest run"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.10",
@@ -20,6 +21,7 @@
     "read-excel-file": "^9.2.0"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.71",
     "@cloudflare/workers-types": "^4.20260702.1",
     "@eslint/eslintrc": "^3",
     "@opennextjs/cloudflare": "^1.20.1",
@@ -29,9 +31,17 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.20",
+    "eslint-config-prettier": "^10.1.8",
     "postcss": "^8",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vitest": "^3.2.7",
     "wrangler": "^4.110.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.18",
+      "esbuild": "0.28.1"
+    }
   }
 }

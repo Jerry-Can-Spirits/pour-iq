@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { receiveStockAction, recordStockCountAction, recordProductionAction, setParAction } from '@/lib/pouriq/server-actions'
@@ -124,7 +125,7 @@ export function StockManager({ rows }: Props) {
     <div className="space-y-4">
       {error && <p role="alert" className="text-sm text-rose-600">{error}</p>}
       <div className="flex justify-end">
-        <a href="/stock/order" className="text-sm text-emerald-700 hover:text-emerald-600 underline">Order report →</a>
+        <Link href="/stock/order" className="text-sm text-emerald-700 hover:text-emerald-600 underline">Order report →</Link>
       </div>
       <div className="space-y-3">
         {rows.map((row) => {

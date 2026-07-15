@@ -231,7 +231,7 @@ export default async function MenuDetailPage({ params }: Props) {
             <section className="no-print">
               <h2 className="text-lg font-semibold text-slate-900 mb-2">Variance</h2>
               <p className="text-sm text-slate-500 mb-3">Stock variance is now counted across your whole bar, not per menu.</p>
-              <a href="/variance" className="text-sm text-emerald-700 hover:text-emerald-600">Go to Variance</a>
+              <Link href="/variance" className="text-sm text-emerald-700 hover:text-emerald-600">Go to Variance</Link>
             </section>
             <section className="no-print">
               <h2 className="text-lg font-semibold text-slate-900 mb-3">Menu balance</h2>
