@@ -186,12 +186,14 @@ export function applyYield(rawMl: number, yieldPct: number): number {
   return rawMl / (y / 100)
 }
 
-// Persistent shrinkage: the most recent 3 variance figures are all negative.
+// Persistent shrinkage: the most recent 3 variance figures are all losses.
+// A loss is a POSITIVE variance cost — money out / overpour (see
+// calcVarianceCostP) — so a run of positive figures is a sustained real loss.
 export function persistentLossFlag(recentVariancesNewestLast: Array<number | null>): boolean {
   const defined = recentVariancesNewestLast.filter((v): v is number => v !== null)
   if (defined.length < 3) return false
   const lastThree = defined.slice(-3)
-  return lastThree.every((v) => v < 0)
+  return lastThree.every((v) => v > 0)
 }
 
 // Canonicalise a stored timestamp for lexical window comparison. Counts and
@@ -281,10 +283,11 @@ export function produceLineUnits(unitsSold: number, recipeQty: number, yieldQty:
 export interface ReasonSummaryRow { reason: string; loss_p: number; share_pct: number }
 export interface VarianceReasonSummary { rows: ReasonSummaryRow[]; total_loss_p: number }
 
-// Aggregate this period's variance LOSSES (negative cost) by their reason code,
-// with an 'unattributed' bucket for losses that have no reason set. Surpluses
-// (variance_cost_p >= 0) are excluded. Pure: operates on the minimal row shape
-// so the client variance editor and unit tests can both call it.
+// Aggregate this period's variance LOSSES (positive cost = money out) by their
+// reason code, with an 'unattributed' bucket for losses that have no reason
+// set. Surpluses (variance_cost_p <= 0, used less than sales explain) are
+// excluded. Pure: operates on the minimal row shape so the client variance
+// editor and unit tests can both call it.
 export function summariseVarianceByReason(
   rows: Array<{ variance_cost_p: number | null; latest_reason: string | null }>,
 ): VarianceReasonSummary {
@@ -292,8 +295,8 @@ export function summariseVarianceByReason(
   let total = 0
   for (const r of rows) {
     const v = r.variance_cost_p
-    if (v == null || v >= 0) continue
-    const loss = -v
+    if (v == null || v <= 0) continue
+    const loss = v
     total += loss
     const key = r.latest_reason && r.latest_reason.trim() !== '' ? r.latest_reason : 'unattributed'
     byReason.set(key, (byReason.get(key) ?? 0) + loss)
