@@ -298,7 +298,7 @@ export default async function MenuDetailPage({ params }: Props) {
                         {perf.hasSales ? (
                           <MenuMatrix quadrants={perf.quadrants} />
                         ) : (
-                          <p className="text-sm text-slate-500">Add this week&rsquo;s sales below to see your menu performance matrix.</p>
+                          <p className="text-sm text-slate-500">Add this week&rsquo;s sales in the Sales tab to see your menu performance matrix.</p>
                         )}
                       </section>
                       <section className="no-print">
