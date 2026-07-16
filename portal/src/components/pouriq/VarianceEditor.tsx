@@ -248,7 +248,8 @@ export function VarianceEditor() {
                       {row.variance_pct !== null && (
                         <span className="ml-2">({row.variance_pct.toFixed(1)}%)</span>
                       )}
-                      <span className="ml-2">{formatMoney(row.variance_cost_p as number)}</span>
+                      {/* Cash impact: a loss (positive variance) is money out, shown negative. */}
+                      <span className="ml-2">{formatMoney(-(row.variance_cost_p as number))}</span>
                     </>
                   )}
                 </div>
@@ -313,8 +314,8 @@ export function VarianceEditor() {
                     <div key={i} className="text-xs text-slate-500 flex gap-3">
                       <span className="text-slate-600">{formatShortDate(point.counted_at)}</span>
                       {point.variance_cost_p !== null && (
-                        <span className={point.variance_cost_p < 0 ? 'text-rose-600' : 'text-slate-700'}>
-                          {formatMoney(point.variance_cost_p)}
+                        <span className={point.variance_cost_p > 0 ? 'text-rose-600' : 'text-slate-700'}>
+                          {formatMoney(-point.variance_cost_p)}
                         </span>
                       )}
                       {point.reason && <span>{point.reason}</span>}
