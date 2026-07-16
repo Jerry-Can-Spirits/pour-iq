@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { checkPourIqAccess, requireDemoSession } from '@/lib/pouriq/access'
+import { checkPourIqAccess } from '@/lib/pouriq/access'
 import { readDemoOverlay } from '@/lib/pouriq/demo/overlay'
 import { DemoScanRipple } from '@/components/pouriq/demo/DemoScanRipple'
 import { LicenceGate } from '@/components/pouriq/LicenceGate'
@@ -29,12 +29,8 @@ export default async function TodayDashboard() {
 
   // Demo: the scan-ripple headline moment, above everything else. Its
   // applied state is read from the session overlay so it survives a reload.
-  let demoRippleApplied = false
-  if (access.role === 'demo') {
-    const kv = env.SITE_OPS as KVNamespace
-    const sid = await requireDemoSession()
-    if (sid) demoRippleApplied = (await readDemoOverlay(kv, sid)).rippleApplied === true
-  }
+  const demoRippleApplied =
+    access.role === 'demo' && (await readDemoOverlay()).rippleApplied === true
 
   return (
     <main className="min-h-screen">
