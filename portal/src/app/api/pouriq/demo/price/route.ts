@@ -1,11 +1,11 @@
 // POST /api/pouriq/demo/price — the price toggle. Records a sale-price
-// override for one menu line in the session overlay so its GP
+// override for one menu line in the session overlay cookie so its GP
 // recalculates. Overlay only — never D1. Body: { cocktail_id, sale_price_p }.
 
 import { NextResponse } from 'next/server'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { requireDemoSession } from '@/lib/pouriq/access'
-import { setDemoPriceOverride } from '@/lib/pouriq/demo/overlay'
+import { readDemoOverlay, withPriceOverride, demoOverlayCookie } from '@/lib/pouriq/demo/overlay'
 import { DEMO_VENUE_ACCOUNT_ID } from '@/lib/pouriq/demo/config'
 
 export const runtime = 'nodejs'
@@ -35,7 +35,6 @@ export async function POST(request: Request) {
   }
 
   const { env } = await getCloudflareContext()
-  const kv = env.SITE_OPS as KVNamespace
   const db = env.DB as D1Database
 
   // The cocktail must belong to the demo venue — a demo session can only
@@ -51,6 +50,8 @@ export async function POST(request: Request) {
     .first<{ 1: number }>()
   if (!owned) return NextResponse.json({ error: 'Unknown cocktail' }, { status: 404 })
 
-  await setDemoPriceOverride(kv, sid, cocktailId, salePriceP as number)
-  return NextResponse.json({ ok: true, cocktail_id: cocktailId, sale_price_p: salePriceP })
+  const overlay = withPriceOverride(await readDemoOverlay(), cocktailId, salePriceP as number)
+  const res = NextResponse.json({ ok: true, cocktail_id: cocktailId, sale_price_p: salePriceP })
+  res.cookies.set(demoOverlayCookie(overlay))
+  return res
 }

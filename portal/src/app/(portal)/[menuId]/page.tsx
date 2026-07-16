@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { checkPourIqAccess, requireDemoSession } from '@/lib/pouriq/access'
+import { checkPourIqAccess } from '@/lib/pouriq/access'
 import { readDemoOverlay } from '@/lib/pouriq/demo/overlay'
 import { DemoPriceToggle } from '@/components/pouriq/demo/DemoPriceToggle'
 import { getMenu, listCocktailsForMenu } from '@/lib/pouriq/menus'
@@ -74,11 +74,8 @@ export default async function MenuDetailPage({ params }: Props) {
   const baseCocktails = await listCocktailsForMenu(db, menuId)
   // Demo: overlay the session's price toggles over base data at read time
   // (never D1), so a persisted override shows in the table on reload.
-  let priceOverrides: Record<string, number> = {}
-  if (access.role === 'demo') {
-    const sid = await requireDemoSession()
-    if (sid) priceOverrides = (await readDemoOverlay(env.SITE_OPS as KVNamespace, sid)).priceOverrides ?? {}
-  }
+  const priceOverrides: Record<string, number> =
+    access.role === 'demo' ? ((await readDemoOverlay()).priceOverrides ?? {}) : {}
   const cocktails = Object.keys(priceOverrides).length
     ? baseCocktails.map((c) => (priceOverrides[c.id] != null ? { ...c, sale_price_p: priceOverrides[c.id] } : c))
     : baseCocktails

@@ -1,8 +1,21 @@
+import { cookies } from 'next/headers'
 import { DEMO_SESSION_TTL_SECONDS } from './config'
 
-// Per-session write overlay. The only place a demo session's "writes"
-// land — never D1. Keyed by session id, TTL matched to the session, so
-// it vanishes on expiry; the reset endpoint deletes it explicitly.
+// Per-session write overlay — the only place a demo session's "writes"
+// land, never D1. Carried in an httpOnly cookie rather than KV.
+//
+// Why a cookie and not KV: the demo reads its overlay on every page
+// render, often before the first write, which negative-caches the KV
+// key; Cloudflare KV then does not make the subsequent write visible in
+// that edge location for up to 60s, so price toggles and the applied
+// ripple would not show on reload (a prod-only effect miniflare hid).
+// A cookie is read-your-writes instant, still per-session, still off
+// D1, and still vanishes on reset (cleared) and on expiry (maxAge). It
+// is httpOnly and tiny (a few overrides); the endpoints validate every
+// write server-side, so the cookie only ever carries bounded, checked
+// values.
+
+export const DEMO_OVERLAY_COOKIE = 'pouriq_demo_overlay'
 
 export interface DemoOverlay {
   // Sale-price overrides from the price toggle, cocktail id -> pence.
@@ -11,47 +24,56 @@ export interface DemoOverlay {
   rippleApplied?: boolean
 }
 
-function overlayKey(sid: string): string {
-  return `demo:overlay:${sid}`
+export async function readDemoOverlay(): Promise<DemoOverlay> {
+  const raw = (await cookies()).get(DEMO_OVERLAY_COOKIE)?.value
+  if (!raw) return {}
+  // The value is JSON that Next URL-encodes on write. Depending on the
+  // runtime, the incoming value may arrive decoded or still encoded, so
+  // try both — parse as-is first, then URL-decoded.
+  for (const candidate of [raw, tryDecode(raw)]) {
+    if (candidate === null) continue
+    try {
+      const parsed = JSON.parse(candidate) as DemoOverlay
+      if (parsed && typeof parsed === 'object') return parsed
+    } catch {
+      /* try the next candidate */
+    }
+  }
+  return {}
 }
 
-export async function readDemoOverlay(kv: KVNamespace, sid: string): Promise<DemoOverlay> {
-  const raw = await kv.get(overlayKey(sid))
-  if (!raw) return {}
+function tryDecode(value: string): string | null {
   try {
-    return JSON.parse(raw) as DemoOverlay
+    return decodeURIComponent(value)
   } catch {
-    return {}
+    return null
   }
 }
 
-export async function writeDemoOverlay(kv: KVNamespace, sid: string, overlay: DemoOverlay): Promise<void> {
-  await kv.put(overlayKey(sid), JSON.stringify(overlay), {
-    expirationTtl: DEMO_SESSION_TTL_SECONDS,
-  })
+// Cookie attributes for writing the overlay on an API response.
+export function demoOverlayCookie(overlay: DemoOverlay) {
+  return {
+    name: DEMO_OVERLAY_COOKIE,
+    value: JSON.stringify(overlay),
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax' as const,
+    path: '/',
+    maxAge: DEMO_SESSION_TTL_SECONDS,
+  }
 }
 
-export async function clearDemoOverlay(kv: KVNamespace, sid: string): Promise<void> {
-  await kv.delete(overlayKey(sid))
-}
-
-// Merge a single price override into the overlay and persist.
-export async function setDemoPriceOverride(
-  kv: KVNamespace,
-  sid: string,
+export function withPriceOverride(
+  overlay: DemoOverlay,
   cocktailId: string,
   salePriceP: number,
-): Promise<DemoOverlay> {
-  const overlay = await readDemoOverlay(kv, sid)
-  const priceOverrides = { ...(overlay.priceOverrides ?? {}), [cocktailId]: salePriceP }
-  const next: DemoOverlay = { ...overlay, priceOverrides }
-  await writeDemoOverlay(kv, sid, next)
-  return next
+): DemoOverlay {
+  return {
+    ...overlay,
+    priceOverrides: { ...(overlay.priceOverrides ?? {}), [cocktailId]: salePriceP },
+  }
 }
 
-export async function setDemoRippleApplied(kv: KVNamespace, sid: string): Promise<DemoOverlay> {
-  const overlay = await readDemoOverlay(kv, sid)
-  const next: DemoOverlay = { ...overlay, rippleApplied: true }
-  await writeDemoOverlay(kv, sid, next)
-  return next
+export function withRippleApplied(overlay: DemoOverlay): DemoOverlay {
+  return { ...overlay, rippleApplied: true }
 }

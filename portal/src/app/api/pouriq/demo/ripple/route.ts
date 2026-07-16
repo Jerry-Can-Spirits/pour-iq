@@ -8,7 +8,7 @@
 import { NextResponse } from 'next/server'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { requireDemoSession } from '@/lib/pouriq/access'
-import { setDemoRippleApplied } from '@/lib/pouriq/demo/overlay'
+import { readDemoOverlay, withRippleApplied, demoOverlayCookie } from '@/lib/pouriq/demo/overlay'
 import { loadMultiCostImpact, type AppliedCostChange } from '@/lib/pouriq/multi-cost-impact'
 import { DEMO_VENUE_ACCOUNT_ID, DEMO_RIPPLE_CHANGES } from '@/lib/pouriq/demo/config'
 
@@ -19,7 +19,6 @@ export async function POST() {
   if (!sid) return NextResponse.json({ error: 'No demo session' }, { status: 403 })
 
   const { env } = await getCloudflareContext()
-  const kv = env.SITE_OPS as KVNamespace
   const db = env.DB as D1Database
 
   // Resolve the fixture change set to library ids by name, scoped to the
@@ -43,13 +42,16 @@ export async function POST() {
   }
 
   const impact = await loadMultiCostImpact(db, DEMO_VENUE_ACCOUNT_ID, changes)
-  await setDemoRippleApplied(kv, sid)
 
   // Return the raw engine shapes so the client can render the product's
-  // own RipplePreview — no demo-specific copy.
-  return NextResponse.json({
+  // own RipplePreview — no demo-specific copy. Mark the ripple applied in
+  // the overlay cookie so a dashboard reload re-shows it.
+  const overlay = withRippleApplied(await readDemoOverlay())
+  const res = NextResponse.json({
     ok: true,
     projected: impact.projected,
     rollups: impact.rollups,
   })
+  res.cookies.set(demoOverlayCookie(overlay))
+  return res
 }
