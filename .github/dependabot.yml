@@ -55,6 +55,11 @@ updates:
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
+      # The vitest Workers pool 0.18+ requires vitest 4; we pin it to 0.8.x
+      # with vitest 3 so the workerd credential suite runs green. Only patch
+      # updates until a deliberate vitest-4 migration.
+      - dependency-name: '@cloudflare/vitest-pool-workers'
+        update-types: ['version-update:semver-minor']
 
   - package-ecosystem: 'github-actions'
     directory: '/'
