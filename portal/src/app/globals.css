@@ -20,3 +20,15 @@
 html {
   font-family: var(--font-inter), system-ui, sans-serif;
 }
+
+/* Print: report pages (the menu report, spec cards) mark their interactive
+   chrome, nav and on-screen-only headers with `no-print` and their app shell
+   (header, nav) too, so those pages print cleanly. Tailwind's built-in
+   `print:` variants already handle the print-only blocks; this backs the
+   custom `no-print` class those pages rely on, which otherwise had no rule
+   and so printed everything. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
