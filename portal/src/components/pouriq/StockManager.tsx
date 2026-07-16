@@ -7,6 +7,7 @@ import { receiveStockAction, recordStockCountAction, recordProductionAction, set
 import type { RollingStockRow } from '@/lib/pouriq/stock-loader'
 import { stockUnitWords } from '@/lib/pouriq/stock'
 import { SECONDARY_BUTTON_SM } from '@/lib/pouriq/button-styles'
+import { CoarseCountInput } from './CoarseCountInput'
 
 interface Props {
   rows: RollingStockRow[]
@@ -209,16 +210,15 @@ export function StockManager({ rows }: Props) {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    step={row.base_unit === 'each' ? 1 : 0.1}
-                    min={0}
+                <div className="flex flex-wrap items-end gap-2">
+                  <CoarseCountInput
                     value={countVal}
-                    onChange={(e) => setCountInputs((prev) => ({ ...prev, [id]: e.target.value }))}
-                    className={inputClass}
-                    placeholder={countLabel}
-                    aria-label={`${row.library_name} count`}
+                    onChange={(next) => setCountInputs((prev) => ({ ...prev, [id]: next }))}
+                    baseUnit={row.base_unit}
+                    containerOne={unit.one}
+                    containerMany={unit.many}
+                    ariaLabel={`${row.library_name} count`}
+                    disabled={pending}
                   />
                   <button
                     type="button"

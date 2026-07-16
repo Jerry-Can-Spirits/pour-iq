@@ -7,6 +7,7 @@ import { summariseVarianceByReason } from '@/lib/pouriq/variance'
 import { stockUnitWords } from '@/lib/pouriq/stock'
 import { statusText } from '@/lib/pouriq/ui'
 import { SECONDARY_BUTTON_SM } from '@/lib/pouriq/button-styles'
+import { CoarseCountInput } from './CoarseCountInput'
 
 interface RollingTrendPoint {
   counted_at: string
@@ -43,9 +44,6 @@ interface RollingVarianceRow {
 interface VarianceApiResponse {
   rows: RollingVarianceRow[]
 }
-
-const inputClass =
-  'w-24 px-2 py-1 bg-white border border-slate-300 rounded-sm text-slate-900 text-sm focus:border-emerald-500 focus:outline-hidden'
 
 const selectClass =
   'px-2 py-1 bg-white border border-slate-300 rounded-sm text-slate-900 text-sm focus:border-emerald-500 focus:outline-hidden'
@@ -164,8 +162,8 @@ export function VarianceEditor() {
           const unitLabel = row.base_unit
           // Count unit follows the container (keg, cask, case…) for
           // ml-priced stock; produce is counted in its own base unit.
-          const countLabel =
-            row.base_unit === 'ml' ? stockUnitWords(row.pack_format).many : row.base_unit
+          const words = stockUnitWords(row.pack_format)
+          const countLabel = row.base_unit === 'ml' ? words.many : row.base_unit
           const countVal = counts[id] ?? ''
           const countNum = parseFloat(countVal)
           const saveEnabled = !pending && Number.isFinite(countNum) && countNum >= 0
@@ -251,16 +249,15 @@ export function VarianceEditor() {
                 </p>
               )}
 
-              <div className="flex flex-wrap items-center gap-3">
-                <input
-                  type="number"
-                  step={row.base_unit === 'each' ? 1 : 0.1}
-                  min={0}
+              <div className="flex flex-wrap items-end gap-3">
+                <CoarseCountInput
                   value={countVal}
-                  onChange={(e) => setCounts((prev) => ({ ...prev, [id]: e.target.value }))}
-                  className={inputClass}
-                  placeholder={countLabel}
-                  aria-label={`${row.library_name} count now`}
+                  onChange={(next) => setCounts((prev) => ({ ...prev, [id]: next }))}
+                  baseUnit={row.base_unit}
+                  containerOne={words.one}
+                  containerMany={words.many}
+                  ariaLabel={`${row.library_name} count now`}
+                  disabled={pending}
                 />
                 {showReason && (
                   <select
