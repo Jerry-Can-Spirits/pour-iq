@@ -78,3 +78,35 @@ export const DEMO_RIPPLE_CHANGES: readonly DemoRippleChange[] = [
   { ingredient_name: 'Golden rum', pricing_mode: 'bottle', new_cost_p: 2140 },
   { ingredient_name: 'Ginger beer (serve)', pricing_mode: 'unit', new_cost_p: 88 },
 ]
+
+// The full scanned invoice, mirrored from the same captured extraction as
+// DEMO_RIPPLE_CHANGES (harrier-invoice-hws-10832.extraction.json). The
+// runtime can't read the fixture file, so the line list lives here as a
+// constant, exactly as the change set does. Names match library entries so
+// each line resolves to a current cost at request time; only the lines that
+// also appear in DEMO_RIPPLE_CHANGES carry a new price — the rest are shown
+// at their current cost with no change. This is display data for the scan
+// review; the ripple itself is still driven by DEMO_RIPPLE_CHANGES.
+export const DEMO_SCAN_SUPPLIER = 'Harrier Wines & Spirits Ltd'
+export const DEMO_SCAN_INVOICE_NUMBER = 'HWS-10832'
+export const DEMO_SCAN_INVOICE_DATE = '2026-07-14'
+
+export interface DemoScanLine {
+  ingredient_name: string
+  quantity: number
+}
+
+export const DEMO_SCAN_LINES: readonly DemoScanLine[] = [
+  { ingredient_name: 'House vodka', quantity: 6 },
+  { ingredient_name: 'House gin', quantity: 4 },
+  { ingredient_name: 'Premium gin', quantity: 2 },
+  { ingredient_name: 'Golden rum', quantity: 2 },
+  { ingredient_name: 'Dark rum', quantity: 2 },
+  { ingredient_name: 'Expedition Spiced Rum', quantity: 2 },
+  { ingredient_name: 'Bourbon', quantity: 2 },
+  { ingredient_name: 'Tequila', quantity: 2 },
+  { ingredient_name: 'Coffee liqueur', quantity: 2 },
+  { ingredient_name: 'Aperol', quantity: 2 },
+  { ingredient_name: 'Prosecco', quantity: 12 },
+  { ingredient_name: 'Ginger beer (serve)', quantity: 96 },
+]
