@@ -145,6 +145,8 @@ export function calculateCocktailMetrics(
       days,
       valid_from: validFrom,
       valid_until: validUntil,
+      start_time: cocktail.promotional_start_time ?? null,
+      end_time: cocktail.promotional_end_time ?? null,
       active_today: isPromoActiveOn(new Date(), days, validFrom, validUntil),
     }
   }
