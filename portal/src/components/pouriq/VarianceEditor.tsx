@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { VARIANCE_REASONS } from '@/lib/pouriq/types'
 import { summariseVarianceByReason } from '@/lib/pouriq/variance'
+import { stockUnitWords } from '@/lib/pouriq/stock'
 import { statusText } from '@/lib/pouriq/ui'
 import { SECONDARY_BUTTON_SM } from '@/lib/pouriq/button-styles'
 
@@ -20,6 +21,7 @@ interface RollingVarianceRow {
   price_p: number
   purchase_qty: number
   base_unit: 'ml' | 'each' | 'g'
+  pack_format: string | null
   latest_count_at: string | null
   latest_count_qty: number | null
   previous_count_at: string | null
@@ -160,7 +162,10 @@ export function VarianceEditor() {
         {rows.map((row) => {
           const id = row.library_ingredient_id
           const unitLabel = row.base_unit
-          const countLabel = row.base_unit === 'ml' ? 'bottles' : row.base_unit
+          // Count unit follows the container (keg, cask, case…) for
+          // ml-priced stock; produce is counted in its own base unit.
+          const countLabel =
+            row.base_unit === 'ml' ? stockUnitWords(row.pack_format).many : row.base_unit
           const countVal = counts[id] ?? ''
           const countNum = parseFloat(countVal)
           const saveEnabled = !pending && Number.isFinite(countNum) && countNum >= 0

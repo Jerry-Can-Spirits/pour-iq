@@ -21,6 +21,9 @@ export interface RollingVarianceRow {
   price_p: number
   purchase_qty: number
   base_unit: 'ml' | 'each' | 'g'
+  // The container the ingredient is counted in (keg, cask, case…). Drives
+  // the count-unit label; null falls back to "bottle".
+  pack_format: string | null
   latest_count_at: string | null
   latest_count_qty: number | null
   previous_count_at: string | null
@@ -48,6 +51,7 @@ interface RecipeLineRow {
   price_p: number
   purchase_qty: number
   yield_pct: number
+  pack_format: string | null
 }
 interface VolumeRow { cocktail_id: string; period_start: string; period_end: string; units_sold: number }
 interface EventRow { library_ingredient_id: string; counted_at: string; count_qty: number; reason: string | null }
@@ -57,7 +61,7 @@ async function readTenantRecipes(db: D1Database, tradeAccountId: string): Promis
   const res = await db.prepare(`
     SELECT c.id AS cocktail_id, i.library_ingredient_id AS library_ingredient_id, i.pour_ml AS pour_ml,
            lib.name AS name, lib.pack_size AS pack_size, lib.price_p AS price_p,
-           lib.purchase_qty AS purchase_qty, lib.yield_pct AS yield_pct
+           lib.purchase_qty AS purchase_qty, lib.yield_pct AS yield_pct, lib.pack_format AS pack_format
     FROM pouriq_cocktails c
     JOIN pouriq_menus m ON m.id = c.menu_id
     JOIN pouriq_ingredients i ON i.cocktail_id = c.id
@@ -158,13 +162,13 @@ export async function loadRollingVariance(db: D1Database, tradeAccountId: string
     arr.push(v); volumesByCocktail.set(v.cocktail_id, arr)
   }
 
-  interface Meta { name: string; pack_size: number; price_p: number; purchase_qty: number; yield_pct: number }
+  interface Meta { name: string; pack_size: number; price_p: number; purchase_qty: number; yield_pct: number; pack_format: string | null }
   const metaByIngredient = new Map<string, Meta>()
   const linesByIngredient = new Map<string, Array<{ cocktail_id: string; pour_ml: number }>>()
   for (const r of recipes) {
     if (!metaByIngredient.has(r.library_ingredient_id)) {
       metaByIngredient.set(r.library_ingredient_id, {
-        name: r.name, pack_size: r.pack_size, price_p: r.price_p, purchase_qty: r.purchase_qty, yield_pct: r.yield_pct,
+        name: r.name, pack_size: r.pack_size, price_p: r.price_p, purchase_qty: r.purchase_qty, yield_pct: r.yield_pct, pack_format: r.pack_format,
       })
     }
     const arr = linesByIngredient.get(r.library_ingredient_id) ?? []
@@ -269,6 +273,7 @@ export async function loadRollingVariance(db: D1Database, tradeAccountId: string
       price_p: meta.price_p,
       purchase_qty: meta.purchase_qty,
       base_unit: 'ml',
+      pack_format: meta.pack_format,
       latest_count_at: ingEvents.length ? sortedEvents[sortedEvents.length - 1].counted_at : null,
       latest_count_qty: ingEvents.length ? sortedEvents[sortedEvents.length - 1].count_qty : null,
       previous_count_at: pair?.previous.counted_at ?? null,
@@ -374,6 +379,8 @@ export async function loadRollingVariance(db: D1Database, tradeAccountId: string
       price_p: meta.price_p,
       purchase_qty: meta.purchase_qty,
       base_unit: meta.base_unit,
+      // Produce (each/g) is counted in its own base unit; no container.
+      pack_format: null,
       latest_count_at: ingEvents.length ? sortedEvents[sortedEvents.length - 1].counted_at : null,
       latest_count_qty: ingEvents.length ? sortedEvents[sortedEvents.length - 1].count_qty : null,
       previous_count_at: pair?.previous.counted_at ?? null,
