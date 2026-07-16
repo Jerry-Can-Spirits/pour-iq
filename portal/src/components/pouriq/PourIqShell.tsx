@@ -72,8 +72,8 @@ export function PourIqShell({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {demo && <DemoBanner />}
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
+      {demo && <div className="no-print"><DemoBanner /></div>}
+      <header className="no-print sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
           <button
             type="button"
@@ -95,12 +95,12 @@ export function PourIqShell({
       </header>
 
       <div className="flex">
-        <aside className="hidden lg:block w-56 shrink-0 border-r border-slate-200 bg-white min-h-[calc(100vh-57px)]">
+        <aside className="no-print hidden lg:block w-56 shrink-0 border-r border-slate-200 bg-white min-h-[calc(100vh-57px)]">
           {nav}
         </aside>
 
         {navOpen && (
-          <div className="lg:hidden fixed inset-0 z-30">
+          <div className="no-print lg:hidden fixed inset-0 z-30">
             <div className="absolute inset-0 bg-black/50" onClick={() => setNavOpen(false)} aria-hidden="true" />
             <aside className="absolute left-0 top-0 bottom-0 w-64 bg-white border-r border-slate-200 overflow-y-auto">
               {nav}
