@@ -313,7 +313,7 @@ export function VarianceEditor() {
                     <div key={i} className="text-xs text-slate-500 flex gap-3">
                       <span className="text-slate-600">{formatShortDate(point.counted_at)}</span>
                       {point.variance_cost_p !== null && (
-                        <span className={point.variance_cost_p < 0 ? 'text-rose-600' : 'text-slate-700'}>
+                        <span className={point.variance_cost_p > 0 ? 'text-rose-600' : 'text-slate-700'}>
                           {formatMoney(point.variance_cost_p)}
                         </span>
                       )}
