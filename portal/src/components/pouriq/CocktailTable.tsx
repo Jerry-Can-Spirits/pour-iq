@@ -72,8 +72,14 @@ export function CocktailTable({ menuId, cocktails, metrics, targetGpPct, statusB
               <tr key={cocktail.id} className="border-t border-slate-200">
                 <td className="px-4 py-3 text-slate-900">
                   {cocktail.name}
-                  {cocktail.field_manual_slug && (
-                    <a href={`/field-manual/cocktails/${cocktail.field_manual_slug}`} className="ml-2 text-xs text-emerald-700 hover:text-emerald-600 underline">
+                  {cocktail.field_manual_slug != null &&
+                    /^[a-z0-9-]+$/.test(cocktail.field_manual_slug) && (
+                    <a
+                      href={`https://jerrycanspirits.co.uk/field-manual/cocktails/${cocktail.field_manual_slug}/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 text-xs text-emerald-700 hover:text-emerald-600 underline"
+                    >
                       Field Manual
                     </a>
                   )}
