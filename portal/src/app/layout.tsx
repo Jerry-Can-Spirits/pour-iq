@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 
@@ -16,6 +16,12 @@ export const metadata: Metadata = {
     template: '%s | Pour IQ',
   },
   robots: { index: false, follow: false },
+}
+
+// The app's "Daylight" identity is light — a white header on slate-50. Match
+// the mobile browser chrome to it.
+export const viewport: Viewport = {
+  themeColor: '#ffffff',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
