@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 // Price toggle: change one menu line's price and watch its GP recompute
 // live, using the product's exact net-sale formula (round(price / 1.20)
@@ -30,6 +31,7 @@ function gpPct(priceP: number, pourCostP: number, includesVat: boolean): number 
 }
 
 export function DemoPriceToggle({ drinks, includesVat }: { drinks: DemoDrink[]; includesVat: boolean }) {
+  const router = useRouter()
   const [selectedId, setSelectedId] = useState(drinks[0]?.cocktail_id ?? '')
   const drink = drinks.find((d) => d.cocktail_id === selectedId) ?? drinks[0]
   const [pounds, setPounds] = useState(((drink?.sale_price_p ?? 0) / 100).toFixed(2))
@@ -51,11 +53,15 @@ export function DemoPriceToggle({ drinks, includesVat }: { drinks: DemoDrink[]; 
     if (!validPrice) return
     setSaving(true)
     try {
-      await fetch('/api/pouriq/demo/price', {
+      const res = await fetch('/api/pouriq/demo/price', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cocktail_id: drink.cocktail_id, sale_price_p: priceP }),
       })
+      // The endpoint writes the new price to the session overlay cookie;
+      // refresh so the server-rendered menu table below re-reads it and
+      // updates in place — matching the real editors, which refresh too.
+      if (res.ok) router.refresh()
     } finally {
       setSaving(false)
     }
