@@ -4,6 +4,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { checkPourIqAccess } from '@/lib/pouriq/access'
 import { LicenceGate } from '@/components/pouriq/LicenceGate'
 import { loadVarianceDetail } from '@/lib/pouriq/variance-detail-loader'
+import { stockUnitWords } from '@/lib/pouriq/stock'
 import { VarianceReasonControl } from '@/components/pouriq/VarianceReasonControl'
 
 export const dynamic = 'force-dynamic'
@@ -50,7 +51,8 @@ export default async function VarianceDetailPage({ params }: Props) {
 
   const L = d.ledger
   const isProduce = d.base_unit !== 'ml'
-  const countLabel = isProduce ? d.base_unit : 'bottles'
+  const container = stockUnitWords(d.pack_format)
+  const countLabel = isProduce ? d.base_unit : container.many
   const isLoss = L.variance_bottles > 0
   const checks: string[] = [
     'Confirm the drinks using this are mapped to the right till products',
@@ -60,8 +62,8 @@ export default async function VarianceDetailPage({ params }: Props) {
           : `Review the pour size for ${d.per_drink.slice(0, 2).map((x) => x.name).join(' and ')}`]
       : []),
     'Check whether complimentary drinks were recorded',
-    isProduce ? 'Verify any stock transfers to another bar or event' : 'Verify any bottle transfers to another bar or event',
-    isProduce ? 'Recount remaining stock carefully' : 'Recount open bottles using measured partials',
+    isProduce ? 'Verify any stock transfers to another bar or event' : `Verify any ${container.one} transfers to another bar or event`,
+    isProduce ? 'Recount remaining stock carefully' : `Recount open ${container.many} using measured partials`,
   ]
 
   // Per-serve label for produce ("25ml juice", "1 wheel")

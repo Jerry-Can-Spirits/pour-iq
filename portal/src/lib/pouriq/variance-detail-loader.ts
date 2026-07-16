@@ -29,6 +29,7 @@ export interface VarianceDetail {
   price_p: number
   purchase_qty: number
   base_unit: 'ml' | 'each' | 'g'
+  pack_format: string | null
   window: { opening_at: string; opening_qty: number; closing_at: string; closing_qty: number } | null
   ledger: VarianceLedger | null
   variance_ml: number | null
@@ -42,7 +43,7 @@ export interface VarianceDetail {
   latest_reason: string | null
 }
 
-interface MetaRow { name: string; pack_size: number; price_p: number; purchase_qty: number; yield_pct: number }
+interface MetaRow { name: string; pack_size: number; price_p: number; purchase_qty: number; yield_pct: number; pack_format: string | null }
 interface LineRow { cocktail_id: string; cocktail_name: string; pour_ml: number }
 interface VolumeRow { cocktail_id: string; period_start: string; period_end: string; units_sold: number }
 interface EventRow { counted_at: string; count_qty: number; reason: string | null }
@@ -69,7 +70,7 @@ async function loadProduceVarianceDetail(
   base_unit: 'each' | 'g',
 ): Promise<VarianceDetail | null> {
   const meta = await db
-    .prepare(`SELECT name, pack_size, price_p, purchase_qty, yield_pct FROM pouriq_ingredients_library WHERE id = ?1 AND trade_account_id = ?2 AND price_p > 0`)
+    .prepare(`SELECT name, pack_size, price_p, purchase_qty, yield_pct, pack_format FROM pouriq_ingredients_library WHERE id = ?1 AND trade_account_id = ?2 AND price_p > 0`)
     .bind(ingredientId, tradeAccountId)
     .first<MetaRow>()
   if (!meta) return null
@@ -120,6 +121,7 @@ async function loadProduceVarianceDetail(
     price_p: meta.price_p,
     purchase_qty: meta.purchase_qty,
     base_unit,
+    pack_format: meta.pack_format,
     latest_reason: events.length ? events[events.length - 1].reason : null,
   }
 
@@ -278,6 +280,7 @@ export async function loadVarianceDetail(
     price_p: meta.price_p,
     purchase_qty: meta.purchase_qty,
     base_unit: 'ml' as const,
+    pack_format: meta.pack_format,
     latest_reason: events.length ? events[events.length - 1].reason : null,
   }
 

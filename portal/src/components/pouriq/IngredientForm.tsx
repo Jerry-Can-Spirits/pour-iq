@@ -58,7 +58,7 @@ const INGREDIENT_TYPE_LABELS: Record<IngredientType, string> = {
 }
 
 const PACK_FORMATS = [
-  'bottle', 'can', 'keg', 'bag-in-box', 'carton', 'pouch', 'case', 'crate', 'bag', 'tub', 'box', 'other',
+  'bottle', 'can', 'keg', 'cask', 'bag-in-box', 'carton', 'pouch', 'case', 'crate', 'bag', 'tub', 'box', 'other',
 ] as const
 
 type MlMeasure = { label: string; qty: number }
