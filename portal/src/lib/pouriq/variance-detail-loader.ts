@@ -6,7 +6,7 @@
 
 import {
   pairLatestCounts, sumBucketsInWindow, sumAmountsInWindow, countInWindow,
-  applyYield, calcVariance, calcVarianceCostP, classifyVariance, buildVarianceLedger,
+  applyYield, calcVariance, calcVarianceCostP, displaySeverity, buildVarianceLedger,
   produceLineUnits,
   type VarianceSeverity, type CountEvent, type VarianceLedger,
 } from './variance'
@@ -172,11 +172,11 @@ async function loadProduceVarianceDetail(
 
   const actualUsedUnits = openingUnits - closingUnits + deliveriesUnits + producedUnits - consumedUnits
   const { variance_ml: variance_units, variance_pct } = calcVariance(actualUsedUnits, theoreticalUnits)
-  const severity = classifyVariance(variance_units, variance_pct, pack)
   const variance_cost_p = variance_units !== null ? Math.round(variance_units * usableCostP) : null
 
   // Trend: variance per consecutive count pair in purchase units.
   const trend: VarianceDetailTrendPoint[] = []
+  const pairVariances: Array<{ variance_ml: number | null; variance_pct: number | null }> = []
   for (let k = 1; k < events.length; k++) {
     const prev = events[k - 1]
     const cur = events[k]
@@ -194,12 +194,15 @@ async function loadProduceVarianceDetail(
       + sumAmountsInWindow(yieldRows, wsT, weT)
       - sumAmountsInWindow(consumeRows, wsT, weT)
     const v = calcVariance(actT, rawT)
+    pairVariances.push({ variance_ml: v.variance_ml, variance_pct: v.variance_pct })
     trend.push({
       counted_at: cur.counted_at,
       variance_cost_p: v.variance_ml !== null ? Math.round(v.variance_ml * usableCostP) : null,
       reason: cur.reason,
     })
   }
+  const previousPair = pairVariances.length >= 2 ? pairVariances[pairVariances.length - 2] : null
+  const severity = displaySeverity(variance_units, variance_pct, previousPair, pack)
 
   return {
     ...base,
@@ -317,11 +320,11 @@ export async function loadVarianceDetail(
   const variance_ml = ledger.variance_bottles * pack
   const actualUsedMl = (pair.previous.count_qty - pair.latest.count_qty) * pack + deliveriesBottles * pack + producedBottles * pack - consumedBottles * pack
   const { variance_pct } = calcVariance(actualUsedMl, applyYield(rawUsageMl, meta.yield_pct))
-  const severity = classifyVariance(variance_ml, variance_pct, pack)
   const variance_cost_p = calcVarianceCostP(variance_ml, pack, meta.price_p, meta.purchase_qty)
 
   // Trend: variance per consecutive count pair, folding the same window terms.
   const trend: VarianceDetailTrendPoint[] = []
+  const pairVariances: Array<{ variance_ml: number | null; variance_pct: number | null }> = []
   for (let k = 1; k < events.length; k++) {
     const prev = events[k - 1]
     const cur = events[k]
@@ -337,8 +340,11 @@ export async function loadVarianceDetail(
       + sumAmountsInWindow(yieldRows, wsT, weT)
       - sumAmountsInWindow(consumeRows, wsT, weT)
     const v = calcVariance(actT, applyYield(rawT, meta.yield_pct))
+    pairVariances.push({ variance_ml: v.variance_ml, variance_pct: v.variance_pct })
     trend.push({ counted_at: cur.counted_at, variance_cost_p: calcVarianceCostP(v.variance_ml, pack, meta.price_p, meta.purchase_qty), reason: cur.reason })
   }
+  const previousPair = pairVariances.length >= 2 ? pairVariances[pairVariances.length - 2] : null
+  const severity = displaySeverity(variance_ml, variance_pct, previousPair, pack)
 
   return {
     ...base,

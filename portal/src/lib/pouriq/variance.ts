@@ -93,17 +93,20 @@ export function calcVarianceCostP(
   return Math.round(variance_ml * costPerMlP(price_p, pack_size, purchase_qty))
 }
 
-export type VarianceSeverity = 'none' | 'within-tolerance' | 'amber' | 'red'
+// 'unconfirmed' is a marginal (amber-band) variance seen on a single count:
+// shown as a plain figure, not escalated, until a second count confirms it.
+export type VarianceSeverity = 'none' | 'within-tolerance' | 'unconfirmed' | 'amber' | 'red'
 
-// Eyeballing a partial bottle is only accurate to roughly a fifth of a bottle,
-// so anything smaller is measurement noise, not loss.
-export const VARIANCE_TOLERANCE_BOTTLES = 0.2
+// The count picker captures the open container to the nearest quarter, so a
+// quarter-bottle swing is the measurement floor — anything smaller is noise,
+// not loss.
+export const VARIANCE_TOLERANCE_BOTTLES = 0.25
 
 /**
- * Classify a variance for display. Absolute variances within the counting
- * noise floor (≈0.2 of a bottle) — or small percentages — are "within
- * tolerance" and should not be flagged as a figure, so staff aren't trained
- * to ignore an always-red report. Beyond that: amber to 20%, red above.
+ * Classify a single count-pair's variance. Absolute variances within the
+ * counting noise floor (≈0.25 of a bottle) — or small percentages — are
+ * "within tolerance" and should not be flagged as a figure, so staff aren't
+ * trained to ignore an always-red report. Beyond that: amber to 20%, red above.
  */
 export function classifyVariance(
   variance_ml: number | null,
@@ -117,6 +120,30 @@ export function classifyVariance(
   if (abs < 10) return 'within-tolerance'
   if (abs <= 20) return 'amber'
   return 'red'
+}
+
+/**
+ * Display severity for the latest count pair, applying the "confirm marginal
+ * loss" rule: a gross (red) variance always flags — you don't wait to react to
+ * a big loss. A marginal (amber-band) variance is held as 'unconfirmed' — shown
+ * as a plain figure, not escalated — until a second consecutive count shows the
+ * same direction of variance beyond tolerance, so a single noisy count doesn't
+ * cry wolf. within-tolerance / none are unchanged. `previousPair` is the
+ * count-pair immediately before the latest (null when there isn't one).
+ */
+export function displaySeverity(
+  variance_ml: number | null,
+  variance_pct: number | null,
+  previousPair: { variance_ml: number | null; variance_pct: number | null } | null,
+  pack_size: number,
+): VarianceSeverity {
+  const raw = classifyVariance(variance_ml, variance_pct, pack_size)
+  if (raw !== 'amber') return raw
+  if (!previousPair || previousPair.variance_ml === null || variance_ml === null) return 'unconfirmed'
+  const prev = classifyVariance(previousPair.variance_ml, previousPair.variance_pct, pack_size)
+  const prevBeyondTolerance = prev === 'amber' || prev === 'red'
+  const sameDirection = Math.sign(variance_ml) === Math.sign(previousPair.variance_ml)
+  return prevBeyondTolerance && sameDirection ? 'amber' : 'unconfirmed'
 }
 
 export interface CountEvent {

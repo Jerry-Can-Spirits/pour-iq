@@ -2,7 +2,7 @@ import 'server-only'
 import { costPerMlP, usableCostPerBaseUnitP } from './calculations'
 import {
   pairLatestCounts, sumBucketsInWindow, persistentLossFlag,
-  calcVariance, calcVarianceCostP, classifyVariance, applyYield, sumAmountsInWindow, countInWindow,
+  calcVariance, calcVarianceCostP, displaySeverity, applyYield, sumAmountsInWindow, countInWindow,
   produceLineUnits,
   type VarianceSeverity, type CountEvent,
 } from './variance'
@@ -242,11 +242,11 @@ export async function loadRollingVariance(db: D1Database, tradeAccountId: string
 
     const { variance_ml, variance_pct } = calcVariance(actual, theoretical)
     const variance_cost_p = calcVarianceCostP(variance_ml, meta.pack_size, meta.price_p, meta.purchase_qty)
-    const severity = classifyVariance(variance_ml, variance_pct, meta.pack_size)
     const impact_p = Math.round(theoretical * costPerMlP(meta.price_p, meta.pack_size, meta.purchase_qty))
 
     const sortedEvents = [...ingEvents].sort((a, b) => a.counted_at.localeCompare(b.counted_at))
     const trend: RollingTrendPoint[] = []
+    const pairVariances: Array<{ variance_ml: number | null; variance_pct: number | null }> = []
     for (let k = 1; k < sortedEvents.length; k++) {
       const prev = sortedEvents[k - 1], cur = sortedEvents[k]
       let rawTheo = 0
@@ -261,8 +261,13 @@ export async function loadRollingVariance(db: D1Database, tradeAccountId: string
       const prodConsumeMlT = sumAmountsInWindow(consumeRows, wsT, weT)
       const act = (prev.count_qty - cur.count_qty) * meta.pack_size + receiptsMlT + prodYieldMlT - prodConsumeMlT
       const v = calcVariance(act, theo)
+      pairVariances.push({ variance_ml: v.variance_ml, variance_pct: v.variance_pct })
       trend.push({ counted_at: cur.counted_at, variance_cost_p: calcVarianceCostP(v.variance_ml, meta.pack_size, meta.price_p, meta.purchase_qty), reason: cur.reason })
     }
+    // Latest pair == the main variance above; the pair before it gates a
+    // marginal (amber) reading so a single noisy count isn't escalated.
+    const previousPair = pairVariances.length >= 2 ? pairVariances[pairVariances.length - 2] : null
+    const severity = displaySeverity(variance_ml, variance_pct, previousPair, meta.pack_size)
     const recentTrend = trend.slice(-TREND_LIMIT)
     const persistent = persistentLossFlag(recentTrend.map((t) => t.variance_cost_p))
 
@@ -345,11 +350,11 @@ export async function loadRollingVariance(db: D1Database, tradeAccountId: string
     const { variance_ml, variance_pct } = calcVariance(actual, theoretical)
     const usableCostP = usableCostPerBaseUnitP(meta.price_p, meta.purchase_qty, meta.pack_size, meta.yield_pct)
     const variance_cost_p = variance_ml !== null ? Math.round(variance_ml * usableCostP) : null
-    const severity = classifyVariance(variance_ml, variance_pct, meta.pack_size)
     const impact_p = Math.round(theoretical * usableCostP)
 
     const sortedEvents = [...ingEvents].sort((a, b) => a.counted_at.localeCompare(b.counted_at))
     const trend: RollingTrendPoint[] = []
+    const pairVariances: Array<{ variance_ml: number | null; variance_pct: number | null }> = []
     for (let k = 1; k < sortedEvents.length; k++) {
       const prev = sortedEvents[k - 1], cur = sortedEvents[k]
       let trendTheo = 0
@@ -363,12 +368,15 @@ export async function loadRollingVariance(db: D1Database, tradeAccountId: string
       const prodConsumeT = sumAmountsInWindow(consumeRows, wsT, weT)
       const act = (prev.count_qty - cur.count_qty) * meta.pack_size + receiptsT + prodYieldT - prodConsumeT
       const v = calcVariance(act, trendTheo)
+      pairVariances.push({ variance_ml: v.variance_ml, variance_pct: v.variance_pct })
       trend.push({
         counted_at: cur.counted_at,
         variance_cost_p: v.variance_ml !== null ? Math.round(v.variance_ml * usableCostP) : null,
         reason: cur.reason,
       })
     }
+    const previousPair = pairVariances.length >= 2 ? pairVariances[pairVariances.length - 2] : null
+    const severity = displaySeverity(variance_ml, variance_pct, previousPair, meta.pack_size)
     const recentTrend = trend.slice(-TREND_LIMIT)
     const persistent = persistentLossFlag(recentTrend.map((t) => t.variance_cost_p))
 
