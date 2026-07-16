@@ -66,6 +66,26 @@ function severityClass(severity: RollingVarianceRow['severity']): string {
   }
 }
 
+// Plain-English restatement for a flagged row. Variance runs both ways, so the
+// line branches on its sign; and it only names a cause when the manager has
+// picked a reason — otherwise it states the fact, never asserting a cause the
+// tool can't know. Callers render it on amber/red rows only, so it never
+// contradicts a within-tolerance / unconfirmed row the tool has called quiet.
+function varianceGloss(row: RollingVarianceRow): string | null {
+  if (row.severity !== 'amber' && row.severity !== 'red') return null
+  if (row.variance_ml === null) return null
+  const n = Math.round(Math.abs(row.variance_ml))
+  const unit = row.base_unit
+  const over = row.variance_ml > 0
+  const reason = row.latest_reason?.trim()
+  if (reason) {
+    return `About ${n} ${unit} ${over ? 'over' : 'under'} what sales account for, put down to ${reason}.`
+  }
+  return over
+    ? `You used about ${n} ${unit} more than sales account for. Worth a look at pour sizes or unrung sales.`
+    : `You used about ${n} ${unit} less than sales account for. Often a miscount or a delivery not logged.`
+}
+
 export function VarianceEditor() {
   const [rows, setRows] = useState<RollingVarianceRow[] | null>(null)
   const [counts, setCounts] = useState<Record<string, string>>({})
@@ -170,6 +190,9 @@ export function VarianceEditor() {
           const showVariance =
             row.variance_cost_p !== null && row.unmatched_in_window === 0
           const showReason = row.severity === 'amber' || row.severity === 'red'
+          // Only gloss a flagged row whose figure is actually shown (variance
+          // is unreliable while sales are understated).
+          const gloss = showVariance ? varianceGloss(row) : null
           const isTrendOpen = openTrend === id
 
           return (
@@ -230,6 +253,8 @@ export function VarianceEditor() {
                   )}
                 </div>
               )}
+
+              {gloss && <p className="text-sm text-slate-600 mb-3">{gloss}</p>}
 
               {row.unmatched_in_window > 0 && (
                 <p className="text-sm text-amber-600 mb-3">
