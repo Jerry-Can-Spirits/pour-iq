@@ -8,17 +8,21 @@
 // action round-trip, so defaultValue from the returned state is what
 // preserves user input on error.
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import Link from 'next/link'
-import { submitDemoRequest, type DemoFormState } from '@/app/(marketing)/contact/actions'
+import { submitDemoRequest, type DemoFormState, type DemoFormValues } from '@/app/(marketing)/contact/actions'
 import { contactCopy, type EmailSplitCopy } from '@/lib/contact-copy'
 
 const initialState: DemoFormState = { status: 'idle' }
 
 const inputClasses =
-  'mt-2 w-full rounded-md border border-slate/40 bg-backbar px-3 py-2.5 text-body text-chalk'
+  'mt-2 w-full rounded-md border border-slate/40 bg-backbar px-3 py-2.5 text-body text-chalk aria-[invalid=true]:border-leak'
 const labelClasses = 'block text-small font-medium text-chalk'
-const errorClasses = 'mt-2 text-small text-leak'
+// Error copy must stay readable: leak is 3.9:1 on cellar — below AA for body
+// text — so error TEXT is chalk, and leak appears only as a NON-TEXT marker
+// (the invalid field's border above; the alert's left border below). Do not
+// reach for text-leak on error messages. See lib/design-tokens.ts (leak).
+const errorClasses = 'mt-2 text-small text-chalk'
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null
@@ -48,6 +52,15 @@ function EmailLine({ copy }: { copy: EmailSplitCopy }) {
 
 export function DemoForm() {
   const [state, formAction, pending] = useActionState(submitDemoRequest, initialState)
+
+  // Move focus to the first invalid field after a failed submit, so keyboard
+  // and screen-reader users land on the error instead of hunting for it.
+  useEffect(() => {
+    if (state.status !== 'invalid' || !state.fieldErrors) return
+    const order: (keyof DemoFormValues)[] = ['name', 'venue', 'email', 'phone', 'message', 'consent']
+    const first = order.find((key) => state.fieldErrors?.[key])
+    if (first) document.getElementById(`contact-${first}`)?.focus()
+  }, [state])
 
   if (state.status === 'success') {
     return (
@@ -197,20 +210,20 @@ export function DemoForm() {
       </div>
 
       {state.status === 'error' && state.errorKind === 'failed' && (
-        <div role="alert" className="mt-6">
-          <p className="font-medium text-leak">{contactCopy.errors.failedHeading}</p>
+        <div role="alert" className="mt-6 border-l-2 border-leak pl-3">
+          <p className="font-medium text-chalk">{contactCopy.errors.failedHeading}</p>
           <p className="mt-2 text-small text-slate">
             <EmailLine copy={contactCopy.errors.failedBody} />
           </p>
         </div>
       )}
       {state.status === 'error' && state.errorKind === 'unavailable' && (
-        <p role="alert" className="mt-6 text-small text-leak">
+        <p role="alert" className="mt-6 border-l-2 border-leak pl-3 text-small text-chalk">
           <EmailLine copy={contactCopy.errors.unavailable} />
         </p>
       )}
       {state.status === 'error' && state.errorKind === 'rate-limited' && (
-        <p role="alert" className="mt-6 text-small text-leak">
+        <p role="alert" className="mt-6 border-l-2 border-leak pl-3 text-small text-chalk">
           <EmailLine copy={contactCopy.errors.rateLimited} />
         </p>
       )}
