@@ -30,6 +30,15 @@ export function PourIqShell({
       )
     : NAV_GROUPS
 
+  // Manual session termination — the backstop to the sliding idle timeout
+  // (see lib/trade-portal/session.ts). A full navigation so the cleared
+  // cookie takes effect. Not shown in the demo (the demo session can't log
+  // out — /api/logout is demo-blocked).
+  async function handleSignOut() {
+    await fetch('/api/logout', { method: 'POST' })
+    window.location.href = '/login'
+  }
+
   const nav = (
     <nav aria-label="Pour IQ" className="px-3 py-4 space-y-5">
       {navGroups.map((group) => (
@@ -59,6 +68,15 @@ export function PourIqShell({
         </div>
       ))}
       <div className="pt-3 mt-1 border-t border-slate-200">
+        {!demo && (
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="block w-full text-left rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          >
+            Sign out
+          </button>
+        )}
         <Link
           href="https://pour-iq.co.uk"
           onClick={() => setNavOpen(false)}

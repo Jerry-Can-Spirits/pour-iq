@@ -53,7 +53,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
   const pin = body.pin?.trim()
-  if (!pin || pin.length < 4 || pin.length > 32) {
+  // Minimum six digits: a deliberate floor for a shared bar tablet, set on
+  // security grounds. Every issued PIN meets it; new accounts must mint at or
+  // above it.
+  if (!pin || pin.length < 6 || pin.length > 32) {
     return NextResponse.json({ error: 'Invalid PIN' }, { status: 400 })
   }
 
