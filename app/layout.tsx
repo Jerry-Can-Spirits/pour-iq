@@ -47,6 +47,21 @@ const organizationSchema = {
   // JSON-LD consumers prefer raster; the 512px tile is derived from the
   // vector source in public/brand (scripts/generate-brand-assets.mjs).
   logo: `${siteUrl}/icon-512.png`,
+  // Pour IQ's own enquiry mailbox. No sameAs: Pour IQ has no social
+  // profiles of its own yet, and Jerry Can Spirits' are deliberately not
+  // linked here — the two entities are being kept separate.
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'sales',
+    email: 'hello@pour-iq.co.uk',
+  },
+}
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Pour IQ',
+  url: siteUrl,
 }
 
 export const metadata: Metadata = {
@@ -93,7 +108,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           nonce={nonce}
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify([organizationSchema, websiteSchema]) }}
         />
         {children}
       </body>

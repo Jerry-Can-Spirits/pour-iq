@@ -69,6 +69,8 @@ Three layers keep the site out of search results until launch (robots.txt alone 
 3. `app/robots.ts`: switch the rule from `disallow: '/'` to `allow: '/'`. The `sitemap` reference is already in place (`app/sitemap.ts` lists all eight routes), so no other change is needed.
 4. Deploy, then verify: `curl -sI https://pour-iq.co.uk` shows **no** `X-Robots-Tag`, page source has **no** `noindex` meta, `/robots.txt` allows crawling and references the sitemap, and `/sitemap.xml` serves all eight routes.
 
+Also at launch: add the `offers` node to the home `SoftwareApplication` JSON-LD (`app/(marketing)/page.tsx`), taking the figure from `lib/pricing.ts` — never a hand-typed price. The node is omitted pre-launch because the price is not yet public; wire it only once the founding-rate cost-check is settled.
+
 (`SITE_URL` no longer needs setting at launch: production builds default to `https://pour-iq.co.uk` in code — see Environment.)
 
 ## Brand assets

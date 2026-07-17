@@ -4,6 +4,7 @@ const footerColumns = [
   {
     heading: 'Company',
     links: [
+      { label: 'Pricing', href: '/pricing' },
       { label: 'About', href: '/about' },
       { label: 'Contact', href: '/contact' },
       { label: 'Sign in', href: 'https://app.pour-iq.co.uk' },
