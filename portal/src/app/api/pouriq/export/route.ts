@@ -47,6 +47,12 @@ export async function GET() {
   if (access.kind !== 'ok') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  // Defense-in-depth: middleware already blocks /api/pouriq/export for a demo
+  // session; this guard means the app's single highest-value endpoint refuses
+  // a demo role even if that prefix block is ever changed.
+  if (access.role === 'demo') {
+    return NextResponse.json({ error: 'Not available in the demo.' }, { status: 403 })
+  }
 
   const { env } = getCloudflareContext()
   const db = env.DB as D1Database

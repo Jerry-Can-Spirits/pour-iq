@@ -46,14 +46,24 @@ export const DEMO_BLOCKED_PREFIXES: readonly string[] = [
   '/api/logout',
 ]
 
+// AI/expensive surfaces that live under a dynamic id segment (e.g.
+// /api/pouriq/menus/<id>/descriptions/generate-bulk), which a static entry
+// in DEMO_BLOCKED_PREFIXES cannot target. Blocked for a demo session
+// regardless of method — defence-in-depth so a future read (GET) variant of
+// an AI-generation route can't slip past the mutating-method deny.
+export const DEMO_BLOCKED_CONTAINS: readonly string[] = ['/descriptions/']
+
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
 // Default-deny decision for a demo session. Blocked when: the path hits
-// a blocked prefix, OR the request mutates and is not on the write
-// allowlist. A new mutating route added later is therefore blocked by
-// construction until explicitly allowlisted.
+// a blocked prefix or a blocked segment, OR the request mutates and is not
+// on the write allowlist. A new mutating route added later is therefore
+// blocked by construction until explicitly allowlisted.
 export function isBlockedForDemo(pathname: string, method: string): boolean {
   if (DEMO_BLOCKED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    return true
+  }
+  if (DEMO_BLOCKED_CONTAINS.some((s) => pathname.includes(s))) {
     return true
   }
   if (MUTATING_METHODS.has(method.toUpperCase())) {
