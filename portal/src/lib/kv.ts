@@ -111,7 +111,11 @@ export async function trackVisitor(
 
 // ── Trade PIN Rate Limiting ─────────────────────────────────────────
 
-export const TRADE_MAX_ATTEMPTS = 5;
+// Per-IP failure ceiling — a coarse anti-spray backstop, counted on genuine
+// failures only. Set well above a busy shared-IP venue's normal mistypes so it
+// never self-DoSes a NAT'd bar; the per-PIN counter below is the real
+// per-account brute-force control.
+export const TRADE_MAX_ATTEMPTS = 20;
 const TRADE_LOCKOUT_TTL = 15 * 60; // 15 minutes
 
 export async function getTradeFailedAttempts(

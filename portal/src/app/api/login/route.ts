@@ -7,6 +7,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 import {
   isAllowedOrigin,
   isRateLimited,
+  getTradeFailedAttempts,
   incrementTradeFailedAttempts,
   clearTradeFailedAttempts,
   TRADE_MAX_ATTEMPTS,
@@ -26,7 +27,10 @@ import {
 
 export const runtime = 'nodejs'
 
-const LOGIN_RATE_LIMIT = 10 // per hour per IP
+// Coarse per-IP request ceiling. High enough that a busy shared-IP venue
+// (multiple staff, shift changes) is never blocked; low enough to cap a
+// runaway loop or aggressive spray from one address.
+const LOGIN_RATE_LIMIT = 60 // per hour per IP
 
 interface LoginBody {
   pin?: string
@@ -67,8 +71,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Too many failed attempts. Please try again later.' }, { status: 429 })
   }
 
-  const failedAttempts = await incrementTradeFailedAttempts(kv, ip)
-  if (failedAttempts > TRADE_MAX_ATTEMPTS) {
+  // Per-IP failure ceiling: checked here, incremented only on a genuine failed
+  // verify (below). Counting attempts rather than failures — and clearing only
+  // on success — used to lock out a whole shared-IP venue when different staff
+  // mistyped; now a successful login never trips it, and the per-PIN counter
+  // above is the real per-account control.
+  if ((await getTradeFailedAttempts(kv, ip)) >= TRADE_MAX_ATTEMPTS) {
     return NextResponse.json({ error: 'Too many failed attempts. Please try again later.' }, { status: 429 })
   }
 
@@ -105,6 +113,7 @@ export async function POST(request: Request) {
     }
   }
   if (!account) {
+    await incrementTradeFailedAttempts(kv, ip)
     await incrementTradeFailedAttemptsForPin(kv, pinKey)
     return NextResponse.json({ error: 'Invalid PIN' }, { status: 401 })
   }

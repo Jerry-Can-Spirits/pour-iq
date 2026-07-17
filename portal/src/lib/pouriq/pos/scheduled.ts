@@ -5,8 +5,7 @@
 
 import { getAdapterForProvider, type ProvidersEnv } from './providers'
 import { ingestOrderLines } from './ingest'
-import { markSyncSuccess, markSyncError, updateConnectionTokens } from './connections'
-import type { PosConnection } from './types'
+import { listEnabledConnections, markSyncSuccess, markSyncError, updateConnectionTokens } from './connections'
 
 // Refresh access tokens this far before they expire. Square access
 // tokens last 30 days; refreshing inside a week keeps a healthy margin
@@ -18,10 +17,9 @@ type Env = { DB: D1Database } & ProvidersEnv
 
 export async function runHourlyPosBackfill(env: Env): Promise<void> {
   const db = env.DB
-  const result = await db
-    .prepare(`SELECT * FROM pouriq_pos_connections WHERE enabled = 1`)
-    .all<PosConnection>()
-  const connections = result.results ?? []
+  // Decrypts tokens (tokens are ciphertext at rest); a raw SELECT here would
+  // 401 every provider call and silently break scheduled sync.
+  const connections = await listEnabledConnections(db)
   for (const conn of connections) {
     try {
       const adapter = getAdapterForProvider(conn.provider, env)
