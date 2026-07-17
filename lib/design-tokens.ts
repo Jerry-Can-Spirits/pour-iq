@@ -38,7 +38,12 @@ export const tokens: DesignTokens = {
     slate: '#9BA79E',
     /** Accent: CTAs, highlights, key figures. */
     measure: '#D98E2B',
-    /** Negative figures only. 3.9:1 on cellar — restrict to large/bold text. */
+    /**
+     * Negative figures only. 3.9:1 on cellar — restrict to large/bold text.
+     * NOT for error-message text (contrast fails AA at body/small sizes): for
+     * error states, the TEXT is chalk and leak is only a non-text marker — an
+     * alert's left border, an icon, or an invalid field's outline.
+     */
     leak: '#C4554D',
     /** Positive figures only. */
     profit: '#7FB994',
