@@ -1,6 +1,6 @@
 'use client'
 
-import { serveUnitsFor, recipeBaseAmount, type BaseUnit, type ServeUnit } from '@/lib/pouriq/measures'
+import { serveUnitsFor, recipeBaseAmount, serveDisplayQty, type BaseUnit, type ServeUnit } from '@/lib/pouriq/measures'
 
 const inputClass = 'px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:border-emerald-500 focus:outline-hidden'
 const labelClass = 'block text-xs font-medium text-slate-600 mb-1'
@@ -17,6 +17,11 @@ interface Props {
   customUnits: ServeUnit[]
   recipeUnit: string | null
   recipeQty: number | null
+  // Legacy measure fields, so imported rows (recipeQty null) still show their
+  // amount. Read-only fallback for display; save behaviour is unchanged.
+  // Optional: callers without legacy rows (serve/ingredient forms) omit them.
+  pourMl?: number | null
+  unitCount?: number | null
   onChange: (next: PickerChange) => void
   costPerBaseUnitP?: number
 }
@@ -32,6 +37,8 @@ export function ServeUnitPicker({
   customUnits,
   recipeUnit,
   recipeQty,
+  pourMl = null,
+  unitCount = null,
   onChange,
   costPerBaseUnitP,
 }: Props) {
@@ -41,7 +48,7 @@ export function ServeUnitPicker({
   const selectedUnit: ServeUnit =
     units.find((u) => u.name === resolvedUnitName) ?? units[0]
 
-  const qty = recipeQty ?? 0
+  const qty = serveDisplayQty(recipeQty, baseUnit, pourMl, unitCount)
 
   function emit(unit: ServeUnit, newQty: number) {
     const base = recipeBaseAmount(newQty, unit.base_per_unit)
