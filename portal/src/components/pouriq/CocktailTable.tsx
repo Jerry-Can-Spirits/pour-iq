@@ -112,6 +112,15 @@ export function CocktailTable({ menuId, cocktails, metrics, targetGpPct, statusB
                       <span className={promoBelowTarget ? 'text-rose-600' : 'text-amber-600'}>
                         {formatMoney(promo.sale_price_p)} · {promo.gp_pct.toFixed(1)}%
                         {promo.label && <span className="block text-[10px] text-slate-500 mt-0.5">{promo.label}</span>}
+                        {(promo.start_time || promo.end_time) && (
+                          <span className="block text-[10px] text-slate-500 mt-0.5">
+                            {promo.start_time && promo.end_time
+                              ? `${promo.start_time}–${promo.end_time}`
+                              : promo.start_time
+                                ? `from ${promo.start_time}`
+                                : `until ${promo.end_time}`}
+                          </span>
+                        )}
                         {promo.active_today && (
                           <span className="inline-block text-[10px] mt-0.5 px-1.5 py-0.5 rounded-sm bg-emerald-50 text-emerald-700 border border-emerald-600">Active today</span>
                         )}
