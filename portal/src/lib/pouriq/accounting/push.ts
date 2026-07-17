@@ -8,7 +8,7 @@
 import * as Sentry from '@/lib/sentry'
 import { buildBill, needsTokenRefresh, type BillInvoiceHeader, type BillInvoiceLine } from './bill-builder'
 import {
-  isConnectionReady, listAccountingConnections,
+  isConnectionReady, listAccountingConnections, listEnabledAccountingConnections,
   markAccountingAuthFailure, markAccountingPushError, markAccountingPushSuccess, updateAccountingTokens,
 } from './connections'
 import { claimPush, getPushForInvoiceProvider, recordPushResult } from './pushes'
@@ -169,10 +169,10 @@ export async function runAccountingPushSweep(
 ): Promise<void> {
   try {
     const db = env.DB
-    const result = await db
-      .prepare(`SELECT * FROM pouriq_accounting_connections WHERE enabled = 1`)
-      .all<AccountingConnection>()
-    for (const conn of result.results ?? []) {
+    // Decrypts tokens (ciphertext at rest); a raw SELECT here would 401 and
+    // then auto-disable a healthy connection on its first sweep.
+    const connections = await listEnabledAccountingConnections(db)
+    for (const conn of connections) {
       if (!isConnectionReady(conn)) continue
       try {
         const pending = await db

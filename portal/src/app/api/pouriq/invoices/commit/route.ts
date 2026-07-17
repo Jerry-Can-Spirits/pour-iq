@@ -89,6 +89,19 @@ function validateBody(body: CommitBody): string | null {
     if (!isNonNegativeInteger(line.extracted_unit_price_p)) {
       return `Line ${i + 1}: extracted_unit_price_p must be a non-negative integer`
     }
+    // AI-sourced numerics that reach a D1 write without their own guard: the
+    // line total is summed into the invoice net total, and the quantity books
+    // a stock receipt. Reject a wrong-typed value (a model can emit a string
+    // or NaN) here rather than let it concatenate or poison stock maths.
+    if (line.extracted_line_total_p !== null && !isNonNegativeInteger(line.extracted_line_total_p)) {
+      return `Line ${i + 1}: extracted_line_total_p must be a non-negative integer or null`
+    }
+    if (
+      line.extracted_quantity !== null &&
+      !(typeof line.extracted_quantity === 'number' && Number.isFinite(line.extracted_quantity) && line.extracted_quantity > 0)
+    ) {
+      return `Line ${i + 1}: extracted_quantity must be a positive number or null`
+    }
     if (line.applied) {
       const hasExisting = typeof line.library_id === 'string' && line.library_id.length > 0
       const hasNew = !!line.new_library

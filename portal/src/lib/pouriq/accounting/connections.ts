@@ -1,4 +1,5 @@
 import type { AccountingConnection, AccountingProvider, AccountingTokenSet } from './types'
+import * as Sentry from '@/lib/sentry'
 import {
   decryptToken,
   decryptTokenNullable,
@@ -80,6 +81,23 @@ export async function listAccountingConnections(
   const result = await db
     .prepare(`SELECT * FROM pouriq_accounting_connections WHERE trade_account_id = ?1`)
     .bind(tradeAccountId)
+    .all<AccountingConnection>()
+  return Promise.all(
+    (result.results ?? []).map(
+      async (row) => (await withDecryptedTokens(row)) as AccountingConnection,
+    ),
+  )
+}
+
+/** Every enabled connection across all tenants, tokens decrypted — for the
+ *  hourly push sweep. listAccountingConnections is tenant-scoped; the sweep
+ *  needs every venue but must still decrypt, or it hands providers ciphertext
+ *  tokens (which 401 and then auto-disable a healthy connection). */
+export async function listEnabledAccountingConnections(
+  db: D1Database,
+): Promise<AccountingConnection[]> {
+  const result = await db
+    .prepare(`SELECT * FROM pouriq_accounting_connections WHERE enabled = 1`)
     .all<AccountingConnection>()
   return Promise.all(
     (result.results ?? []).map(
@@ -170,6 +188,14 @@ export async function markAccountingPushError(db: D1Database, connectionId: stri
 /** Auth failure (revoked/expired refresh token): pause pushing entirely.
  *  Reconnecting re-enables via the upsert (enabled = 1, error cleared). */
 export async function markAccountingAuthFailure(db: D1Database, connectionId: string, error: string): Promise<void> {
+  // Auto-disable is a track-covering failure mode — the connection silently
+  // stops pushing — so make it observable. An alert here means "an accounting
+  // connection just disabled itself", found from monitoring rather than from a
+  // confused customer weeks later.
+  Sentry.captureMessage(`Accounting connection auto-disabled: ${connectionId}`, {
+    level: 'warning',
+    extra: { connectionId, error: error.slice(0, 500) },
+  })
   await db
     .prepare(`UPDATE pouriq_accounting_connections SET enabled = 0, last_push_error = ?1, updated_at = datetime('now') WHERE id = ?2`)
     .bind(error.slice(0, 500), connectionId)

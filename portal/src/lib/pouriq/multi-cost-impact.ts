@@ -8,7 +8,7 @@
 // the current contribution.
 
 import { rollupByMenu, type MenuRollup, type ProjectedCocktail } from './cost-impact'
-import { netSalePrice, usableCostPerBaseUnitP } from './calculations'
+import { lineCostFromUseP, netSalePrice, usableCostPerBaseUnitP } from './calculations'
 
 export interface AppliedCostChange {
   library_ingredient_id: string
@@ -35,6 +35,9 @@ interface RawRow {
   ingredient_library_id: string
   ingredient_pour_ml: number | null
   ingredient_unit_count: number | null
+  ingredient_use_id: string | null
+  ingredient_recipe_qty: number | null
+  use_yield_qty: number | null
   lib_base_unit: 'ml' | 'g' | 'each'
   lib_pack_size: number
   lib_price_p: number
@@ -53,10 +56,16 @@ function placeholders(n: number, offset: number): string {
  * costP (which may be the current OR the historical pre-commit value).
  */
 export function contributionP(
-  row: Pick<RawRow, 'ingredient_pour_ml' | 'ingredient_unit_count' | 'lib_base_unit' | 'lib_pack_size' | 'lib_purchase_qty' | 'lib_yield_pct'>,
+  row: Pick<RawRow, 'ingredient_pour_ml' | 'ingredient_unit_count' | 'lib_base_unit' | 'lib_pack_size' | 'lib_purchase_qty' | 'lib_yield_pct' | 'ingredient_use_id' | 'ingredient_recipe_qty' | 'use_yield_qty'>,
   costP: number,
 ): number {
   const perBaseUnit = usableCostPerBaseUnitP(costP, row.lib_purchase_qty, row.lib_pack_size, row.lib_yield_pct)
+  // Produce "use" line: cost via the use's yield (see cost-impact-loader and
+  // ingredientCostPence). The changed cost flows through costP, so a produce
+  // ingredient's price rise ripples correctly.
+  if (row.ingredient_use_id != null) {
+    return lineCostFromUseP(perBaseUnit, row.use_yield_qty ?? 0, row.ingredient_recipe_qty ?? 0)
+  }
   const amount = row.lib_base_unit === 'each'
     ? (row.ingredient_unit_count ?? 0)
     : (row.ingredient_pour_ml ?? 0)
@@ -105,6 +114,9 @@ export async function loadMultiCostImpact(
       i.library_ingredient_id AS ingredient_library_id,
       i.pour_ml AS ingredient_pour_ml,
       i.unit_count AS ingredient_unit_count,
+      i.use_id AS ingredient_use_id,
+      i.recipe_qty AS ingredient_recipe_qty,
+      u.yield_qty AS use_yield_qty,
       lib.base_unit AS lib_base_unit,
       lib.pack_size AS lib_pack_size,
       lib.price_p AS lib_price_p,
@@ -115,6 +127,7 @@ export async function loadMultiCostImpact(
     JOIN pouriq_menus m ON m.id = c.menu_id
     JOIN pouriq_ingredients i ON i.cocktail_id = c.id
     JOIN pouriq_ingredients_library lib ON lib.id = i.library_ingredient_id
+    LEFT JOIN pouriq_ingredient_uses u ON u.id = i.use_id
     ORDER BY m.name, c.name
   `
   const result = await db

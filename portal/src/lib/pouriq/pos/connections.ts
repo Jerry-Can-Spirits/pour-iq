@@ -89,6 +89,19 @@ export async function listConnections(
   )
 }
 
+/** Every enabled connection across all tenants, tokens decrypted — for the
+ *  hourly cron sweep. listConnections is tenant-scoped; the cron needs every
+ *  venue but must still decrypt, or it hands providers ciphertext tokens
+ *  (which 401 on every run and silently break scheduled sync). */
+export async function listEnabledConnections(db: D1Database): Promise<PosConnection[]> {
+  const result = await db
+    .prepare(`SELECT * FROM pouriq_pos_connections WHERE enabled = 1`)
+    .all<PosConnection>()
+  return Promise.all(
+    (result.results ?? []).map(async (row) => (await withDecryptedTokens(row)) as PosConnection),
+  )
+}
+
 export async function findConnectionByExternalAccount(
   db: D1Database,
   provider: PosProvider,
