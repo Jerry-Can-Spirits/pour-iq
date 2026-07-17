@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { CapabilityRow } from '@/components/marketing/capability-row'
 import { CtaLink } from '@/components/marketing/cta-link'
-import { buildMetadata } from '@/lib/metadata'
+import { buildMetadata, siteUrl } from '@/lib/metadata'
 
 export const metadata = buildMetadata({
   title: 'Pour IQ | Menu and cost engineering for UK bars',
@@ -13,14 +13,18 @@ export const metadata = buildMetadata({
   absoluteTitle: true,
 })
 
-// Facts only — offers omitted until the price is public; no ratings,
-// reviews, or aggregate data of any kind.
+// Facts only — offers omitted until the price is public (see the launch
+// checklist in the README); no ratings, reviews, or aggregate data of any
+// kind. Description reuses the approved page copy verbatim.
 const softwareApplicationSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: 'Pour IQ',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
+  url: siteUrl,
+  description:
+    'Pour IQ scans your supplier invoices, costs every serve, and shows what each price rise does to your GP. Built for independent UK bars.',
 }
 
 // Final approved copy. COST, COUNT, and CONNECT are verified shipped

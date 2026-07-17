@@ -3,10 +3,11 @@ import { PageHero } from '@/components/marketing/page-hero'
 import { buildMetadata } from '@/lib/metadata'
 
 export const metadata = buildMetadata({
-  title: 'Proof',
+  title: 'See it working: the Pour IQ pilot',
   description:
     "Real figures from real venues, starting with Pour IQ's first pilot at The Bank Bar and Grill. Published as they land.",
   path: '/case-studies',
+  absoluteTitle: true,
 })
 
 // Final approved copy (Dan, 2026-07-12). The pilot terms mirror the signed

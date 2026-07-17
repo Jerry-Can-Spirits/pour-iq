@@ -2,7 +2,7 @@ import { PageHero } from '@/components/marketing/page-hero'
 import { buildMetadata } from '@/lib/metadata'
 
 export const metadata = buildMetadata({
-  title: 'FAQ',
+  title: 'Questions bar operators ask',
   description:
     'Straight answers on invoice scanning, data security, AWRS compliance, contract terms, and getting a venue onboarded.',
   path: '/faq',
