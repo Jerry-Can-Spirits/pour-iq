@@ -451,6 +451,8 @@ export async function insertCocktail(
     promotional_days: string | null
     promotional_valid_from: string | null
     promotional_valid_until: string | null
+    promotional_start_time: string | null
+    promotional_end_time: string | null
     position: number
     field_manual_slug: string | null
     notes: string | null
@@ -464,14 +466,16 @@ export async function insertCocktail(
         (menu_id, name, sale_price_p,
          promotional_price_p, promotional_label,
          promotional_days, promotional_valid_from, promotional_valid_until,
+         promotional_start_time, promotional_end_time,
          position, field_manual_slug, notes, glass, item_type, updated_at)
-      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, datetime('now'))
+      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, datetime('now'))
       RETURNING id
     `)
     .bind(
       data.menu_id, data.name, data.sale_price_p,
       data.promotional_price_p, data.promotional_label,
       data.promotional_days, data.promotional_valid_from, data.promotional_valid_until,
+      data.promotional_start_time, data.promotional_end_time,
       data.position, data.field_manual_slug, data.notes, data.glass, data.item_type,
     )
     .first<{ id: string }>()

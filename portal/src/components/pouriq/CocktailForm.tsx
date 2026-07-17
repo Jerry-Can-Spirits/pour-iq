@@ -63,6 +63,8 @@ export function CocktailForm({ menuId, cocktail, libraryEntries, serveUnits, ing
   )
   const [promoValidFrom, setPromoValidFrom] = useState(cocktail?.promotional_valid_from ?? '')
   const [promoValidUntil, setPromoValidUntil] = useState(cocktail?.promotional_valid_until ?? '')
+  const [promoStartTime, setPromoStartTime] = useState(cocktail?.promotional_start_time ?? '')
+  const [promoEndTime, setPromoEndTime] = useState(cocktail?.promotional_end_time ?? '')
   const [notes, setNotes] = useState(cocktail?.notes ?? '')
   const [glass, setGlass] = useState(cocktail?.glass ?? '')
   const [itemType, setItemType] = useState<ItemType>(cocktail?.item_type ?? 'cocktail')
@@ -204,6 +206,8 @@ export function CocktailForm({ menuId, cocktail, libraryEntries, serveUnits, ing
     let promotional_days: string | null = null
     let promotional_valid_from: string | null = null
     let promotional_valid_until: string | null = null
+    let promotional_start_time: string | null = null
+    let promotional_end_time: string | null = null
     if (promotional_price_p !== null) {
       if (promoDays.length > 0 && promoDays.length < 7) {
         promotional_days = [...promoDays].sort((a, b) => a - b).join(',')
@@ -213,6 +217,13 @@ export function CocktailForm({ menuId, cocktail, libraryEntries, serveUnits, ing
       promotional_valid_until = isoDate(promoValidUntil)
       if (promotional_valid_from && promotional_valid_until && promotional_valid_until < promotional_valid_from) {
         setError('Promo end date must be on or after the start date')
+        return
+      }
+      const hhmm = (s: string) => /^\d{2}:\d{2}$/.test(s.trim()) ? s.trim() : null
+      promotional_start_time = hhmm(promoStartTime)
+      promotional_end_time = hhmm(promoEndTime)
+      if (promotional_start_time && promotional_end_time && promotional_end_time <= promotional_start_time) {
+        setError('Promo end time must be after the start time.')
         return
       }
     }
@@ -227,6 +238,8 @@ export function CocktailForm({ menuId, cocktail, libraryEntries, serveUnits, ing
         promotional_days,
         promotional_valid_from,
         promotional_valid_until,
+        promotional_start_time,
+        promotional_end_time,
         notes: notes.trim() || null,
         glass: glass.trim() || null,
         item_type: itemType,
@@ -326,6 +339,16 @@ export function CocktailForm({ menuId, cocktail, libraryEntries, serveUnits, ing
               <div>
                 <label htmlFor="promo_valid_until" className={LABEL}>Valid until (optional)</label>
                 <input id="promo_valid_until" type="date" value={promoValidUntil} onChange={(e) => setPromoValidUntil(e.target.value)} className={INPUT} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label htmlFor="promo_start_time" className={LABEL}>Start time (optional)</label>
+                <input id="promo_start_time" type="time" value={promoStartTime} onChange={(e) => setPromoStartTime(e.target.value)} className={INPUT} />
+              </div>
+              <div>
+                <label htmlFor="promo_end_time" className={LABEL}>End time (optional)</label>
+                <input id="promo_end_time" type="time" value={promoEndTime} onChange={(e) => setPromoEndTime(e.target.value)} className={INPUT} />
               </div>
             </div>
           </>

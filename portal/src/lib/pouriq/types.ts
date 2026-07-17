@@ -90,6 +90,9 @@ export interface CocktailRow {
   promotional_days: string | null
   promotional_valid_from: string | null  // ISO YYYY-MM-DD
   promotional_valid_until: string | null
+  // Time-of-day window, "HH:MM" 24h, inclusive. NULL = no bound that side.
+  promotional_start_time: string | null
+  promotional_end_time: string | null
   position: number
   field_manual_slug: string | null
   notes: string | null
@@ -204,6 +207,9 @@ export interface CocktailMetrics {
     days: number[] | null
     valid_from: string | null
     valid_until: string | null
+    // Time-of-day window ("HH:MM" 24h), null = no bound that side.
+    start_time: string | null
+    end_time: string | null
     // True iff the promo is in effect on the date the metrics were
     // computed (server "now"). Drives the UI's "Active today" badge.
     active_today: boolean
