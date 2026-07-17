@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "pour-iq-portal",
+  // Pour IQ's own Cloudflare account (separated from Jerry Can Spirits).
+  "account_id": "05017d6deb57b88fd599332649512236",
   "main": "./cloudflare-worker-entry.mjs",
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -15,13 +17,13 @@
     {
       "binding": "DB",
       "database_name": "pour-iq-db",
-      "database_id": "babf3701-bb03-423d-ab0d-592fc6eb64e4",
+      "database_id": "8cc38747-3e21-4133-822c-9a813346bded",
     },
   ],
   "kv_namespaces": [
     {
       "binding": "SITE_OPS",
-      "id": "9a736eada2ec4a64bf92f0ee6d6fb41a",
+      "id": "998276c7f3904115bcae552ff303938c",
     },
   ],
   "r2_buckets": [
@@ -30,12 +32,10 @@
       "bucket_name": "pour-iq-docs",
     },
   ],
-  "routes": [
-    {
-      "pattern": "app.pour-iq.co.uk",
-      "custom_domain": true,
-    },
-  ],
+  // Custom domain re-added after the pour-iq.co.uk zone moves into this
+  // account (it can't bind while the zone still lives in the JCS account):
+  // { "pattern": "app.pour-iq.co.uk", "custom_domain": true }
+
   // Hourly: POS sales backfill + accounting push retry sweep.
   "triggers": {
     "crons": ["0 * * * *"],

@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "pour-iq",
+  // Pour IQ's own Cloudflare account (separated from Jerry Can Spirits).
+  "account_id": "05017d6deb57b88fd599332649512236",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -13,7 +15,7 @@
     // hash of the IP, 10-minute TTL). No user data lives here.
     {
       "binding": "RATE_LIMIT",
-      "id": "72d08fac2c76440c948cc447999cd93e",
+      "id": "8471a041a1074f829ee7c04f161ea506",
     },
   ],
   "observability": {
