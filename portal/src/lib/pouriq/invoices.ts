@@ -179,13 +179,14 @@ export interface PriceChangeRow {
   new_cost_p: number
   source: 'manual' | 'invoice'
   supplier_name: string | null
+  invoice_id: string | null
   changed_at: string
 }
 
 export async function listCostChanges(db: D1Database, tradeAccountId: string, limit = 100): Promise<PriceChangeRow[]> {
   const { results } = await db
     .prepare(`SELECT cc.id, l.name AS ingredient_name, cc.old_cost_p, cc.new_cost_p, cc.source,
-                     i.supplier_name, cc.changed_at
+                     i.supplier_name, cc.invoice_id, cc.changed_at
               FROM pouriq_cost_changes cc
               JOIN pouriq_ingredients_library l ON l.id = cc.library_ingredient_id AND l.trade_account_id = ?1
               LEFT JOIN pouriq_invoices i ON i.id = cc.invoice_id

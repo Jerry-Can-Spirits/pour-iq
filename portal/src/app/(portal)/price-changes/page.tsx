@@ -67,7 +67,15 @@ export default async function PriceChangesPage() {
                       <td className="px-4 py-3 text-slate-700 tabular-nums">{fmt(c.new_cost_p)}</td>
                       <td className="px-4 py-3"><ChangeCell oldP={c.old_cost_p} newP={c.new_cost_p} /></td>
                       <td className="px-4 py-3 text-slate-600 capitalize">{c.source}</td>
-                      <td className="px-4 py-3 text-slate-600">{c.supplier_name ?? '—'}</td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {c.invoice_id ? (
+                          <Link href={`/invoices/${c.invoice_id}`} className="text-emerald-700 hover:text-emerald-600 underline">
+                            {c.supplier_name ?? 'View invoice'}
+                          </Link>
+                        ) : (
+                          c.supplier_name ?? '—'
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
