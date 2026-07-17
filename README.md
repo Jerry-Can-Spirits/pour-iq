@@ -42,7 +42,7 @@ Mobile-first throughout: base styles target 390px-class viewports; widen with `s
 
 ## Security headers and CSP status
 
-The CSP is nonce-based, built per request in `middleware.ts`: `script-src 'self' 'nonce-{value}' 'strict-dynamic'`, with no `'unsafe-inline'` in `script-src`. Next stamps the nonce onto every script it renders; the root layout reads the nonce via `headers()`, which is what opts every page into dynamic rendering. That cost was measured before shipping (2026-07-13, Workers preview edge): median homepage TTFB ~101ms dynamic versus ~103ms static, response size +2.3% — negligible on this stack, so the nonce policy shipped.
+The CSP is nonce-based, built per request in `middleware.ts`: `script-src 'self' 'nonce-{value}' 'strict-dynamic'`, with no `'unsafe-inline'` in `script-src`. Next stamps the nonce onto every script it renders; the root layout reads the nonce via `headers()`, which is what opts every page into dynamic rendering. That cost was measured before shipping (2026-07-13, Workers preview edge): median homepage TTFB ~101ms dynamic versus ~103ms static, response size +2.3% — negligible on this stack, so the nonce policy shipped. A hash-based CSP that would reclaim static generation was re-evaluated in the CWV audit (2026-07-17) and again declined: the ~2ms TTFB saving does not justify losing the single nonce-CSP pattern shared with the portal or taking on per-build script-hash maintenance (a drifted hash breaks the site silently). Revisit only if post-launch traffic shows marketing TTFB affecting conversions.
 
 **`style-src` retains `'unsafe-inline'` — a documented, accepted exception:** the design-token system inlines CSS custom properties on `<html>` (`lib/design-tokens.ts` via the root layout), which needs inline style permission. Do not remove it without reworking token delivery.
 
@@ -72,6 +72,14 @@ Three layers keep the site out of search results until launch (robots.txt alone 
 Also at launch: add the `offers` node to the home `SoftwareApplication` JSON-LD (`app/(marketing)/page.tsx`), taking the figure from `lib/pricing.ts` — never a hand-typed price. The node is omitted pre-launch because the price is not yet public; wire it only once the founding-rate cost-check is settled.
 
 (`SITE_URL` no longer needs setting at launch: production builds default to `https://pour-iq.co.uk` in code — see Environment.)
+
+### Launch — on-device eyeball
+
+Once deployed, on a real mid-range Android over throttled wifi (these are per-launch eyeball checks, not automated):
+
+- **Hero, no font-swap shift (CLS):** `next/font`'s size-adjusted fallback should neutralise the display-font swap; only tune the fallback stack if a shift is actually visible (tuning to fix a shift that isn't there just introduces a different one).
+- **Reduced motion:** with `prefers-reduced-motion: reduce`, the pour animation is suppressed and the hero shows its finished composition.
+- **320px:** no horizontal scroll on any page at the narrowest supported width.
 
 ## Brand assets
 
