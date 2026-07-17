@@ -26,6 +26,10 @@ const monoFont = IBM_Plex_Mono({
   weight: ['400', '500'],
   variable: '--font-ibm-plex-mono',
   display: 'swap',
+  // The mono face carries labels and figures, not the LCP hero text, so it
+  // stays out of the early preload set to keep the critical path lean on
+  // slow connections. It still loads on demand via display: swap.
+  preload: false,
 })
 
 // Facts only: no ratings, reviews, or aggregate data of any kind. Rendered
