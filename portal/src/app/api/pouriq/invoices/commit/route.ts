@@ -71,6 +71,12 @@ function genId(): string {
 
 function validateBody(body: CommitBody): string | null {
   if (!body.ticket || typeof body.ticket !== 'string') return 'Missing ticket'
+  // Tickets are minted as crypto.randomUUID() at upload. Enforce that contract
+  // at the boundary before the value reaches the R2 key (parity with
+  // invoices/pending/[ticket]).
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.ticket)) {
+    return 'Invalid ticket'
+  }
   if (body.prices_include_vat !== undefined && typeof body.prices_include_vat !== 'boolean') {
     return 'prices_include_vat must be a boolean'
   }
@@ -378,7 +384,11 @@ export async function POST(request: Request) {
   try {
     const pendingKey = `pouriq-invoices/_pending/${body.ticket}.pdf`
     const obj = await r2.get(pendingKey)
-    if (obj) {
+    // Defense-in-depth: a leaked ticket must not let another tenant attach
+    // someone else's uploaded PDF to their own invoice. Same guard as
+    // invoices/extract and invoices/pending/[ticket]. A mismatch leaves the
+    // invoice committed without a PDF (r2Key stays null), as if none was found.
+    if (obj && obj.customMetadata?.tradeAccountId === access.tradeAccountId) {
       const buffer = await obj.arrayBuffer()
       const permKey = `pouriq-invoices/${access.tradeAccountId}/${invoiceId}.pdf`
       await r2.put(permKey, buffer, {
