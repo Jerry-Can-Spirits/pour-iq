@@ -444,6 +444,8 @@ export function CocktailForm({ menuId, cocktail, libraryEntries, serveUnits, ing
                       customUnits={customUnits}
                       recipeUnit={ing.recipe_unit}
                       recipeQty={ing.recipe_qty}
+                      pourMl={ing.pour_ml}
+                      unitCount={ing.unit_count}
                       onChange={(next) => updateIngredient(idx, next)}
                     />
                   </div>

@@ -141,3 +141,22 @@ export function formatServeMeasure(
   if (unit_count != null) return unit_count === 1 ? '1 unit' : `${unit_count} units`
   return ''
 }
+
+/**
+ * Quantity to show in the edit form's serve-amount input. Prefers the explicit
+ * recipe_qty (new rows); for imported/legacy rows that store the measure in
+ * pour_ml/unit_count with recipe_qty null, falls back to the base-unit measure
+ * — the same fallback formatServeMeasure applies, so the edit form shows the
+ * amount the spec card already does (an imported 60ml pour renders as 60, not
+ * 0). Display only: it does not change what is stored.
+ */
+export function serveDisplayQty(
+  recipe_qty: number | null,
+  base_unit: 'ml' | 'g' | 'each',
+  pour_ml: number | null,
+  unit_count: number | null,
+): number {
+  if (recipe_qty != null) return recipe_qty
+  const legacy = base_unit === 'each' ? unit_count : pour_ml
+  return legacy ?? 0
+}
