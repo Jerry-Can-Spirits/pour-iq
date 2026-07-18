@@ -6,7 +6,8 @@
  *   ageverified:{fp}        — Server-side age verification cache (365d TTL)
  *   visitor:{fp}            — First-time vs returning visitor (30d TTL)
  *   trade:failed:{ip}       — Trade PIN failed attempts per IP (15min TTL)
- *   trade:pin-failed:{pinKey} — Trade PIN account-level failed attempts, keyed by pinRateKey hash (1h TTL)
+ *   trade:pin-failed:{pinKey} — Trade PIN per-credential failed attempts, keyed by pinRateKey hash (1h TTL)
+ *   trade:global-failed     — Global trade-login failed-attempt velocity (10min TTL)
  *   trade:session:{sid}     — Trade portal session tokens (30d TTL)
  *   ratelimit:{prefix}:{ip} — Generic rate limit counters (configurable TTL)
  */
@@ -145,7 +146,13 @@ export async function clearTradeFailedAttempts(
   await kv.delete(`trade:failed:${ip}`);
 }
 
-// ── Trade PIN Account-Level Lockout ──────────────────────────────────
+// ── Trade PIN per-credential lockout ─────────────────────────────────
+// Keyed on a hash of the SUBMITTED PIN (pinRateKey), so it bounds repeated
+// guesses of one PIN value. Because PINs are schema-unique this is, in effect,
+// per-account for an attacker hammering a known credential — but it does NOT
+// bound enumeration: an attacker guessing many different PINs hits a fresh key
+// on every guess and never trips this. The global velocity counter below is
+// the control that bounds distributed enumeration of the PIN space.
 
 export const TRADE_PIN_MAX_ATTEMPTS = 10;
 const TRADE_PIN_LOCKOUT_TTL = 60 * 60; // 1 hour
@@ -177,6 +184,43 @@ export async function clearTradeFailedAttemptsForPin(
   pinKey: string,
 ): Promise<void> {
   await kv.delete(`trade:pin-failed:${pinKey}`);
+}
+
+// ── Global failed-login velocity ─────────────────────────────────────
+// One counter across ALL IPs and PINs, incremented on every genuine login
+// failure. This is the primary control against DISTRIBUTED enumeration of the
+// PIN space: the per-IP and per-PIN counters are both defeated by spreading
+// guesses across IPs (shared or rotating wifi) and across PIN values, but
+// every wrong guess, wherever it comes from, increments this single counter.
+//
+// The ceiling is the delicate parameter — revisit it as the portal grows:
+//   - Well ABOVE legitimate failure volume: at pilot scale a handful of venues
+//     produce at most low-tens of genuine mistypes in ten minutes, so 100
+//     leaves comfortable headroom and a busy Friday rush never trips a
+//     site-wide lockout (which would be worse than the attack it prevents).
+//   - Well BELOW useful enumeration speed: 100 per 10 minutes caps a
+//     distributed attacker at ~600 guesses/hour globally, a severe throttle
+//     against a six-digit (10^6) space on top of the per-IP and per-PIN caps.
+// It self-heals: the window is fixed, so a tripped counter blocks logins for at
+// most TRADE_GLOBAL_WINDOW before clearing (blocked attempts return before the
+// increment, so they never extend the lockout). It is never cleared on a
+// success — one venue logging in must not reset the global enumeration bound.
+// A tripped counter blocking all logins is a deliberate backstop; Turnstile
+// after N failures (a consciously deferred follow-up, see docs/SECURITY.md) is
+// the intended graduated replacement. Raise this as the live venue count grows.
+export const TRADE_GLOBAL_MAX_ATTEMPTS = 100;
+const TRADE_GLOBAL_WINDOW = 10 * 60; // 10 minutes
+
+export async function getGlobalFailedAttempts(kv: KVNamespace): Promise<number> {
+  const val = await kv.get('trade:global-failed');
+  return val ? parseInt(val, 10) : 0;
+}
+
+export async function incrementGlobalFailedAttempts(kv: KVNamespace): Promise<number> {
+  const current = await getGlobalFailedAttempts(kv);
+  const next = current + 1;
+  await kv.put('trade:global-failed', String(next), { expirationTtl: TRADE_GLOBAL_WINDOW });
+  return next;
 }
 
 // ── Origin Validation ───────────────────────────────────────────────
