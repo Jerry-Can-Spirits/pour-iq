@@ -15,6 +15,9 @@ import {
   incrementTradeFailedAttemptsForPin,
   clearTradeFailedAttemptsForPin,
   TRADE_PIN_MAX_ATTEMPTS,
+  getGlobalFailedAttempts,
+  incrementGlobalFailedAttempts,
+  TRADE_GLOBAL_MAX_ATTEMPTS,
 } from '@/lib/kv'
 import { createTradeSession, setTradeSessionCookie } from '@/lib/trade-portal/session'
 import {
@@ -48,6 +51,13 @@ export async function POST(request: Request) {
   const ip = (request.headers.get('CF-Connecting-IP') ?? request.headers.get('x-forwarded-for') ?? 'unknown').split(',')[0].trim()
   if (await isRateLimited(kv, 'trade-login', ip, LOGIN_RATE_LIMIT, 3600)) {
     return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
+  }
+
+  // Global failed-login velocity: the primary bound on distributed enumeration
+  // of the PIN space, checked before any per-IP / per-PIN / verify work so a
+  // spraying attacker is turned away regardless of how they distribute guesses.
+  if ((await getGlobalFailedAttempts(kv)) >= TRADE_GLOBAL_MAX_ATTEMPTS) {
+    return NextResponse.json({ error: 'Too many failed attempts. Please try again later.' }, { status: 429 })
   }
 
   let body: LoginBody
@@ -115,6 +125,7 @@ export async function POST(request: Request) {
   if (!account) {
     await incrementTradeFailedAttempts(kv, ip)
     await incrementTradeFailedAttemptsForPin(kv, pinKey)
+    await incrementGlobalFailedAttempts(kv)
     return NextResponse.json({ error: 'Invalid PIN' }, { status: 401 })
   }
 
