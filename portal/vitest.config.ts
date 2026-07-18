@@ -1,4 +1,5 @@
 import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config'
+import path from 'node:path'
 
 // Credential tests run on workerd, not Node, because the two runtimes
 // genuinely differ: Node happily runs PBKDF2 at any iteration count,
@@ -7,6 +8,9 @@ import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config'
 // ran on Node. Runtime caps and WebCrypto behaviour must fail here,
 // in CI, not at a venue's first login.
 export default defineWorkersConfig({
+  resolve: {
+    alias: { '@': path.resolve(__dirname, './src') },
+  },
   test: {
     include: ['tests/**/*.test.ts'],
     poolOptions: {
