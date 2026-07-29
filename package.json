@@ -15,9 +15,9 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
-    "next": "15.5.20",
-    "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "next": "15.5.22",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
