@@ -15,10 +15,10 @@
   "dependencies": {
     "@headlessui/react": "^2.2.10",
     "html5-qrcode": "^2.3.8",
-    "next": "15.5.20",
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
-    "read-excel-file": "^9.2.0"
+    "next": "15.5.22",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "read-excel-file": "^9.3.4"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.71",
