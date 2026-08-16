@@ -64,7 +64,7 @@ export function SiteFooter() {
             &copy; {year} Jerry Can Spirits Ltd. All rights reserved.
           </p>
           <p className="text-small text-slate">
-            Pour IQ is a trademark of Jerry Can Spirits Ltd. UK trade mark application
+            Pour IQ is a registered trademark of Jerry Can Spirits Ltd, UK trade mark
             UK00004387466.
           </p>
         </div>
