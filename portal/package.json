@@ -15,7 +15,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.10",
     "html5-qrcode": "^2.3.8",
-    "next": "15.5.22",
+    "next": "15.5.23",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "read-excel-file": "^9.3.5"
