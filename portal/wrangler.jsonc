@@ -13,7 +13,10 @@
   },
   // Fresh Pour IQ-owned resources — deliberately not the Jerry Can Spirits
   // bindings; the entities are separate. D1 and R2 are placed in WEUR
-  // (Western Europe), matching the privacy policy's data-residency claim.
+  // (Western Europe) to keep platform data in the region. The privacy policy
+  // deliberately states no region, so this placement is not a published
+  // commitment: changing it needs no legal-copy change, and adding a region
+  // to the policy would be the thing that ties the two together.
   "d1_databases": [
     {
       "binding": "DB",
