@@ -42,7 +42,7 @@ export default async function MenuCopyPage({ params }: Params) {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24">
         <Link href={`/${menuId}`} className="text-sm text-slate-500 hover:text-slate-700">← {menu.name}</Link>
         <div className="inline-block px-4 py-2 bg-slate-100 rounded-full border border-slate-200 mt-3 mb-6">
-          <span className="text-slate-500 text-sm font-semibold uppercase tracking-widest">Pour IQ™</span>
+          <span className="text-slate-500 text-sm font-semibold uppercase tracking-widest">Pour IQ®</span>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">Menu copy</h1>
         <p className="text-slate-600 text-base leading-relaxed mb-8">

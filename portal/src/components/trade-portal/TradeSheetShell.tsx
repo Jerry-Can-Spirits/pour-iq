@@ -22,7 +22,7 @@ export function TradeSheetShell({ title, eyebrow, subtitle, children, tone = 'da
             href="/"
             className={`text-sm ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-parchment-400 hover:text-parchment-200'}`}
           >
-            ← Pour IQ™
+            ← Pour IQ®
           </Link>
           <PrintButton />
         </div>
