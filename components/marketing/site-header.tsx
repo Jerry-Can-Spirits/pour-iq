@@ -12,7 +12,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-backbar bg-cellar">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="font-display text-xl font-extrabold text-chalk">
-          Pour IQ
+          Pour IQ<span className="align-super text-[0.6em] font-semibold">®</span>
         </Link>
         <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
           {navLinks.map((link) => (

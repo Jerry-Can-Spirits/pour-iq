@@ -23,7 +23,7 @@ export default async function ScanInvoicePage() {
         <Link href="/library" className="text-sm text-slate-500 hover:text-slate-700">← Library</Link>
         <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3 mb-2">Scan an invoice</h1>
         <p className="text-slate-500 text-sm mb-10">
-          Drop a supplier PDF. Pour IQ™ extracts every line, matches against your library, and shows the combined GP impact before you commit.
+          Drop a supplier PDF. Pour IQ® extracts every line, matches against your library, and shows the combined GP impact before you commit.
         </p>
         <InvoiceScanFlow library={library} />
       </div>

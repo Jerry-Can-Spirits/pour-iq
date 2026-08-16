@@ -17,9 +17,9 @@ export default async function PourIqHelpPage() {
     <main className="min-h-screen">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24">
         <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
-          ← Pour IQ™
+          ← Pour IQ®
         </Link>
-        <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3 mb-3">Pour IQ™ help</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3 mb-3">Pour IQ® help</h1>
         <div className="bg-white rounded-xl p-8 border border-slate-200">
           <p className="text-slate-600 leading-relaxed">
             Your problem lands with the person who built the thing. Email{' '}

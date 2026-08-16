@@ -145,7 +145,7 @@ export default async function MenuDetailPage({ params }: Props) {
         </div>
         {/* Print-only report header — never visible on screen */}
         <div className="hidden print:block mb-6 pb-4 border-b border-stone-300">
-          <p className="text-xs uppercase tracking-widest">Pour IQ™ menu report</p>
+          <p className="text-xs uppercase tracking-widest">Pour IQ® menu report</p>
           <p className="text-xs">Generated {reportDate}</p>
         </div>
         <div className="flex flex-wrap items-baseline justify-between gap-3 mt-4 mb-3">

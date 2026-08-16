@@ -19,8 +19,8 @@ const sections: LegalSection[] = [
       <>
         Pour IQ is operated by Jerry Can Spirits Ltd, company number 16618770, registered in England
         and Wales at 167-169 Great Portland Street, London, W1W 5PA. VAT registration GB 499 6389
-        03. Contact: <LegalMailto />. Pour IQ™ is a trade mark of Jerry Can Spirits Ltd; UK trade
-        mark application UK00004387466 is pending registration in Classes 9, 35, and 42.
+        03. Contact: <LegalMailto />. Pour IQ® is a registered trade mark of Jerry Can Spirits Ltd,
+        UK trade mark UK00004387466, registered in Classes 9, 35, and 42.
       </>,
     ],
   },

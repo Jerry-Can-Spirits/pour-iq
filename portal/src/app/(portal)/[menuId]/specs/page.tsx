@@ -51,7 +51,7 @@ export default async function SpecCardsPage({ params }: Props) {
           </Link>
           <div className="inline-block px-4 py-2 bg-slate-100 rounded-full border border-slate-200 mt-3 mb-6">
             <span className="text-slate-500 text-sm font-semibold uppercase tracking-widest">
-              Pour IQ™
+              Pour IQ®
             </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
@@ -63,7 +63,7 @@ export default async function SpecCardsPage({ params }: Props) {
         </div>
 
         <div className="hidden print:block mb-6 pb-4 border-b border-stone-300">
-          <p className="text-xs uppercase tracking-widest">Pour IQ™ spec cards</p>
+          <p className="text-xs uppercase tracking-widest">Pour IQ® spec cards</p>
           <p className="text-xs">
             {menu.name} · Generated {reportDate}
           </p>

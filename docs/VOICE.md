@@ -47,7 +47,7 @@ Use the trade's words without explaining them: GP and GP%, pour cost, serve, spe
 - **The leak** — the core metaphor for hidden margin loss. "Your margin is leaking. Pour IQ shows you exactly where." It shows up as pennies, on every serve, every night.
 - **The ripple** — one supplier price rise rippling through every recipe and serve it touches.
 
-The customer is a **venue** (or a bar, or "you"); never "operator", never "user" in customer-facing copy. The product is **Pour IQ** on the marketing site and **Pour IQ™** in the portal, always the subject of active verbs: Pour IQ scans, reads, flags, shows. Its one-line descriptor: "Menu and cost engineering for independent UK bars." The parent company is Jerry Can Spirits. The underlying AI is Claude (Anthropic in legal copy).
+The customer is a **venue** (or a bar, or "you"); never "operator", never "user" in customer-facing copy. The product is **Pour IQ**, always the subject of active verbs: Pour IQ scans, reads, flags, shows. The mark is registered (UK00004387466 in Classes 9, 35 and 42), so the symbol is **®** and never ™. Carry it on the first prominent use of a page — the site header on marketing, the wordmark in the portal — and in the legal notices; body copy after that stays plain, because a symbol on every mention reads as insecurity rather than ownership. Its one-line descriptor: "Menu and cost engineering for independent UK bars." The parent company is Jerry Can Spirits. The underlying AI is Claude (Anthropic in legal copy).
 
 Integrations are named plainly — Square, Zettle (by PayPal), SumUp in; Xero, QuickBooks out — and summarised as "Sales in… bills out. No retyping."
 

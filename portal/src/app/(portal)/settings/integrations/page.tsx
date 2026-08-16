@@ -71,7 +71,7 @@ export default async function IntegrationsPage({ searchParams }: SearchParams) {
   return (
     <main className="min-h-screen">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24">
-        <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">← Pour IQ™</Link>
+        <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">← Pour IQ®</Link>
         <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3 mb-2">Integrations</h1>
         <p className="text-slate-500 text-sm mb-10">
           Connect your POS so sales volumes flow into Pour IQ automatically. You can still enter or paste volumes manually any time.

@@ -62,7 +62,7 @@ Full reference: `docs/VOICE.md`. The short version:
 - No exclamation marks. No hype language. Sentence-case headings ending in a full stop.
 - One CTA per piece of content. Write to one venue owner, not a crowd.
 - Only sell what is built. Never claim cross-venue price benchmarking — no feature shows one venue's prices to another venue or to us, and copy must never contradict that.
-- The customer is a venue. The product is Pour IQ (Pour IQ™ in the portal), always the subject of active verbs.
+- The customer is a venue. The product is Pour IQ, always the subject of active verbs. The mark is registered (UK00004387466), so the symbol is `®`, never `™`: on the first prominent use of a page — the site header, the portal wordmark — and in the legal notices. Subsequent mentions in body copy stay plain.
 
 ---
 
