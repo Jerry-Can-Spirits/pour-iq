@@ -33,8 +33,8 @@ importers:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
       read-excel-file:
-        specifier: ^9.3.5
-        version: 9.3.5
+        specifier: ^9.3.10
+        version: 9.3.10
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.8.71
@@ -3428,8 +3428,8 @@ packages:
     resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
     engines: {node: '>=0.10.0'}
 
-  read-excel-file@9.3.5:
-    resolution: {integrity: sha512-A4EbaJxFrqzBNdU4Lw0g6wzme3m7ywW3MsPLLuBiGPUWJbxETyVDT5vyqsOnl/AW48OGM4MGoOgKFsEZNMMVVw==}
+  read-excel-file@9.3.10:
+    resolution: {integrity: sha512-zFcBdzunLCGBmLRT4Q3mLPJnhKPAXXfGAZ83feODlEqX2aRUbgF1h/n2oY0UF7I8tVwnJNRas6fTRD5veDUs+g==}
     engines: {node: '>=18'}
 
   reflect.getprototypeof@1.0.10:
@@ -3939,8 +3939,8 @@ packages:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
 
-  worker-f@0.1.16:
-    resolution: {integrity: sha512-OUUScWk1WzdrxjEbRqfjicINmmqoGQNp4znpmqcZJ/ozE2P76ACD2oVYNxMiyuz99Cv2VUhlbin8Szl5y0+GLw==}
+  worker-f@0.1.20:
+    resolution: {integrity: sha512-7z5K5z4x++FykhpDTfriT/dOu7CmSap9BBv38DVFU3CD38obopq+DoFH75yBV3butpGm+OeqR9BKdSvYJSnUfQ==}
     engines: {node: '>=12'}
 
   workerd@1.20250906.0:
@@ -7582,12 +7582,12 @@ snapshots:
 
   react@19.2.8: {}
 
-  read-excel-file@9.3.5:
+  read-excel-file@9.3.10:
     dependencies:
       fflate: 0.8.3
       saxen: 11.1.1
       unzipper-esm: 0.13.3
-      worker-f: 0.1.16
+      worker-f: 0.1.20
 
   reflect.getprototypeof@1.0.10:
     dependencies:
@@ -8302,7 +8302,7 @@ snapshots:
 
   word-wrap@1.2.5: {}
 
-  worker-f@0.1.16: {}
+  worker-f@0.1.20: {}
 
   workerd@1.20250906.0:
     optionalDependencies:
